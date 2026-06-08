@@ -1,0 +1,6 @@
+{
+    "python.defaultInterpreterPath": "C:\\Users\\luequ\\micromamba\\envs\\torch311\\python.exe",
+    "jupyter.kernels.trusted": [
+        "C:\\Users\\luequ\\AppData\\Roaming\\jupyter\\kernels\\torch311\\kernel.json"
+    ]
+}

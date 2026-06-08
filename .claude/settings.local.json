@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(set -e)",
+      "Bash(curl -s https://api.github.com/repos/lengstrom/flashback)",
+      "Bash(echo '===================== FILE: __TRACKED_VAR__ =====================')",
+      "Bash(curl -s https://raw.githubusercontent.com/lengstrom/flashback/main/__TRACKED_VAR__)",
+      "Bash(echo)"
+    ]
+  }
+}
