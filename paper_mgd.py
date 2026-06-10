@@ -20,8 +20,8 @@ from functional_train import (
     TrainState,
     functional_smooth_adamw,
 )
-from mae import make_patch_mask, per_example_masked_reconstruction_loss
-from metagrad import ObjectiveBatch, reconstruction_objective
+from model import per_example_cross_entropy_loss
+from metagrad import ObjectiveBatch, classification_objective
 from recursive_replay import (
     ReplayCheckpointConfig,
     recursive_replay_state as _recursive_replay_state,
@@ -37,6 +37,7 @@ class CandidatePool:
 
     images: Tensor
     image_ids: Tensor
+    labels: Tensor
 
     def __post_init__(self) -> None:
         if self.images.ndim != 4 or self.images.shape[0] == 0:
@@ -47,6 +48,10 @@ class CandidatePool:
             raise ValueError("image_ids must have torch.long dtype")
         if torch.unique(self.image_ids.detach().cpu()).numel() != self.image_ids.numel():
             raise ValueError("image_ids must be unique")
+        if self.labels.ndim != 1 or self.labels.shape[0] != self.images.shape[0]:
+            raise ValueError("labels must have one entry per candidate image")
+        if self.labels.dtype != torch.long:
+            raise ValueError("labels must have torch.long dtype")
 
     @property
     def num_candidates(self) -> int:
@@ -58,7 +63,7 @@ class PaperInnerBatch:
     """One ordinary batch in the count-derived inner-training trajectory."""
 
     images: Tensor
-    patch_mask: Tensor
+    labels: Tensor
     candidate_indices: Tensor
 
 
@@ -67,7 +72,7 @@ class PaperProbeBatch:
     """Original-pool candidates whose infinitesimal weights are probed at step k."""
 
     images: Tensor
-    patch_mask: Tensor
+    labels: Tensor
     candidate_indices: Tensor
 
 
@@ -87,8 +92,6 @@ class PaperMGDConfig:
     update_policy: UpdatePolicy = "projected_sign"
     coordinate_fraction: float = 1.0
     exchange_fraction: float = 0.1
-    mask_seed: int = 0
-    probe_mask_seed: int = 1
     shuffle_seed: int = 2
     selection_seed: int = 3
     probe_chunk_size: int | None = None
@@ -177,9 +180,6 @@ def build_count_trajectory(
     *,
     inner_steps: int,
     batch_size: int,
-    num_patches: int,
-    mask_ratio: float,
-    mask_seed: int,
     shuffle_seed: int,
 ) -> tuple[PaperInnerBatch, ...]:
     """Build the fixed-budget deterministic trajectory induced by integer counts."""
@@ -191,46 +191,25 @@ def build_count_trajectory(
         counts, inner_steps * batch_size, shuffle_seed
     ).reshape(inner_steps, batch_size)
     batches: list[PaperInnerBatch] = []
-    for step, cpu_indices in enumerate(schedule):
+    for cpu_indices in schedule:
         image_indices = cpu_indices.to(pool.images.device)
-        id_indices = cpu_indices.to(pool.image_ids.device)
+        label_indices = cpu_indices.to(pool.labels.device)
         images = pool.images.index_select(0, image_indices)
-        image_ids = pool.image_ids.index_select(0, id_indices)
-        patch_mask = make_patch_mask(
-            image_ids,
-            step=step,
-            seed=mask_seed,
-            num_patches=num_patches,
-            mask_ratio=mask_ratio,
-        ).to(pool.images.device)
-        batches.append(PaperInnerBatch(images, patch_mask, cpu_indices.clone()))
+        labels = pool.labels.index_select(0, label_indices)
+        batches.append(PaperInnerBatch(images, labels, cpu_indices.clone()))
     return tuple(batches)
 
 
 def make_probe_batch(
     pool: CandidatePool,
     selected_indices: Tensor,
-    *,
-    perturbation_step: int,
-    num_patches: int,
-    mask_ratio: float,
-    mask_seed: int,
 ) -> PaperProbeBatch:
-    if perturbation_step < 0:
-        raise ValueError("perturbation_step must be nonnegative")
     cpu_indices = _validate_selected_indices(selected_indices, pool.num_candidates)
     image_indices = cpu_indices.to(pool.images.device)
-    id_indices = cpu_indices.to(pool.image_ids.device)
+    label_indices = cpu_indices.to(pool.labels.device)
     images = pool.images.index_select(0, image_indices)
-    image_ids = pool.image_ids.index_select(0, id_indices)
-    patch_mask = make_patch_mask(
-        image_ids,
-        step=perturbation_step,
-        seed=mask_seed,
-        num_patches=num_patches,
-        mask_ratio=mask_ratio,
-    ).to(pool.images.device)
-    return PaperProbeBatch(images, patch_mask, cpu_indices)
+    labels = pool.labels.index_select(0, label_indices)
+    return PaperProbeBatch(images, labels, cpu_indices)
 
 
 def _validate_selected_indices(selected_indices: Tensor, size: int) -> Tensor:
@@ -387,11 +366,9 @@ def paper_inner_step(
     if batch.images.shape[0] == 0:
         raise ValueError("inner batches must be non-empty")
     predictions = functional_call(
-        model, (state.parameters, state.buffers), (batch.images, batch.patch_mask)
+        model, (state.parameters, state.buffers), (batch.images,)
     )
-    loss = per_example_masked_reconstruction_loss(
-        batch.images, predictions, batch.patch_mask
-    ).mean()
+    loss = per_example_cross_entropy_loss(predictions, batch.labels).mean()
 
     if probe_batch is not None:
         if perturbations.ndim != 1:
@@ -408,14 +385,14 @@ def paper_inner_step(
         for start in range(0, perturbations.numel(), chunk_size):
             stop = min(start + chunk_size, perturbations.numel())
             probe_images = probe_batch.images[start:stop]
-            probe_mask = probe_batch.patch_mask[start:stop]
+            probe_labels = probe_batch.labels[start:stop]
             probe_predictions = functional_call(
                 model,
                 (state.parameters, state.buffers),
-                (probe_images, probe_mask),
+                (probe_images,),
             )
-            probe_losses = per_example_masked_reconstruction_loss(
-                probe_images, probe_predictions, probe_mask
+            probe_losses = per_example_cross_entropy_loss(
+                probe_predictions, probe_labels
             )
             perturbation_loss = perturbation_loss + (
                 perturbations[start:stop] * probe_losses
@@ -491,7 +468,7 @@ def paper_unrolled_objective(
         probe_chunk_size=probe_chunk_size,
         create_graph=create_graph,
     )
-    return reconstruction_objective(model, final_state, objective_batch)
+    return classification_objective(model, final_state, objective_batch)
 
 
 def paper_recursive_replay_state(
@@ -566,7 +543,7 @@ def paper_replay_objective(
         branching_factor=branching_factor,
         checkpoint_config=checkpoint_config,
     )
-    return reconstruction_objective(model, final_state, objective_batch)
+    return classification_objective(model, final_state, objective_batch)
 
 
 def paper_replay_metagradient(
@@ -622,20 +599,12 @@ def paper_mgd_outer_step(
     _require_active_dataset(counts)
     if outer_step < 0:
         raise ValueError("outer_step must be nonnegative")
-    model_config = getattr(model, "config", None)
-    if model_config is None or not all(
-        hasattr(model_config, name) for name in ("num_patches", "mask_ratio")
-    ):
-        raise ValueError("model must expose MAE num_patches and mask_ratio via config")
 
     trajectory = build_count_trajectory(
         pool,
         counts,
         inner_steps=config.inner_steps,
         batch_size=config.batch_size,
-        num_patches=model_config.num_patches,
-        mask_ratio=model_config.mask_ratio,
-        mask_seed=config.mask_seed,
         shuffle_seed=config.shuffle_seed + outer_step,
     )
     selection_seed = config.selection_seed + outer_step
@@ -647,14 +616,7 @@ def paper_mgd_outer_step(
         selected_indices = shard_coordinates(
             pool.num_candidates, config.coordinate_fraction, selection_seed
         )
-    probe_batch = make_probe_batch(
-        pool,
-        selected_indices,
-        perturbation_step=config.perturbation_step,
-        num_patches=model_config.num_patches,
-        mask_ratio=model_config.mask_ratio,
-        mask_seed=config.probe_mask_seed,
-    )
+    probe_batch = make_probe_batch(pool, selected_indices)
     perturbations = torch.zeros(
         selected_indices.numel(),
         dtype=pool.images.dtype,

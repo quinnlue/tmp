@@ -18,13 +18,13 @@ from functional_train import (
     TrainState,
     initialize_train_state,
 )
-from mae import MaeConfig, MaskedAutoencoderViT, make_patch_mask
+from model import ViTConfig, VisionTransformerClassifier
 from metagrad import InnerBatch, ObjectiveBatch
 
 
 @dataclass(frozen=True)
 class OracleFixture:
-    model: MaskedAutoencoderViT
+    model: VisionTransformerClassifier
     initial_state: TrainState
     trajectory: tuple[InnerBatch, ...]
     objective_batch: ObjectiveBatch
@@ -34,21 +34,20 @@ class OracleFixture:
 
 def make_oracle_fixture(steps: int = 8) -> OracleFixture:
     torch.manual_seed(123)
-    config = MaeConfig(
+    config = ViTConfig(
         image_size=8,
         patch_size=4,
         encoder_dim=8,
         encoder_depth=1,
         encoder_heads=2,
-        decoder_dim=8,
-        decoder_depth=1,
-        decoder_heads=2,
         mlp_ratio=2.0,
-        mask_ratio=0.5,
+        num_classes=2,
     )
-    model = MaskedAutoencoderViT(config).double()
+    model = VisionTransformerClassifier(config).double()
     initial_state = initialize_train_state(model)
     cluster_ids = torch.tensor([0, 0, 1, 1])
+    # Clusters coincide with class labels in the cluster-basis experiment.
+    training_labels = torch.tensor([0, 0, 1, 1])
     training_images = torch.randn(
         4,
         3,
@@ -57,16 +56,10 @@ def make_oracle_fixture(steps: int = 8) -> OracleFixture:
         dtype=torch.float64,
         generator=torch.Generator().manual_seed(100),
     )
-    trajectory = []
-    for step in range(steps):
-        patch_mask = make_patch_mask(
-            [10, 11, 12, 13],
-            step=step,
-            seed=9,
-            num_patches=config.num_patches,
-            mask_ratio=config.mask_ratio,
-        )
-        trajectory.append(InnerBatch(training_images, patch_mask, cluster_ids))
+    trajectory = [
+        InnerBatch(training_images, training_labels, cluster_ids)
+        for _ in range(steps)
+    ]
 
     objective_images = torch.randn(
         2,
@@ -76,18 +69,13 @@ def make_oracle_fixture(steps: int = 8) -> OracleFixture:
         dtype=torch.float64,
         generator=torch.Generator().manual_seed(999),
     )
-    objective_mask = make_patch_mask(
-        [1000, 1001],
-        step=0,
-        seed=77,
-        num_patches=config.num_patches,
-        mask_ratio=config.mask_ratio,
-    )
+    # The held-out objective scores the target class c* = 0.
+    objective_labels = torch.tensor([0, 0])
     return OracleFixture(
         model=model,
         initial_state=initial_state,
         trajectory=tuple(trajectory),
-        objective_batch=ObjectiveBatch(objective_images, objective_mask),
+        objective_batch=ObjectiveBatch(objective_images, objective_labels),
         optimizer_config=SmoothAdamWConfig(
             learning_rate=2e-3,
             betas=(0.8, 0.9),
@@ -103,7 +91,7 @@ def retarget_trajectory(
 ) -> tuple[InnerBatch, ...]:
     """Rebuild the trajectory with a different group-id assignment."""
     return tuple(
-        InnerBatch(batch.images, batch.patch_mask, group_ids)
+        InnerBatch(batch.images, batch.labels, group_ids)
         for batch in fixture.trajectory
     )
 

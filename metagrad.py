@@ -7,20 +7,20 @@ from torch import Tensor, nn
 from torch.func import functional_call
 
 from functional_train import SmoothAdamWConfig, TrainState, weighted_inner_step
-from mae import masked_reconstruction_loss
+from model import cross_entropy_loss
 
 
 @dataclass(frozen=True)
 class InnerBatch:
     images: Tensor
-    patch_mask: Tensor
+    labels: Tensor
     group_ids: Tensor
 
 
 @dataclass(frozen=True)
 class ObjectiveBatch:
     images: Tensor
-    patch_mask: Tensor
+    labels: Tensor
 
 
 def train_unrolled(
@@ -43,7 +43,7 @@ def train_unrolled(
             model,
             state,
             batch.images,
-            batch.patch_mask,
+            batch.labels,
             batch.group_ids,
             logits,
             base_group_masses,
@@ -54,18 +54,18 @@ def train_unrolled(
     return state
 
 
-def reconstruction_objective(
+def classification_objective(
     model: nn.Module,
     state: TrainState,
     batch: ObjectiveBatch,
 ) -> Tensor:
-    """Evaluate the unweighted held-out masked-reconstruction objective."""
+    """Evaluate the unweighted held-out cross-entropy objective."""
     predictions = functional_call(
         model,
         (state.parameters, state.buffers),
-        (batch.images, batch.patch_mask),
+        (batch.images,),
     )
-    return masked_reconstruction_loss(batch.images, predictions, batch.patch_mask)
+    return cross_entropy_loss(predictions, batch.labels)
 
 
 def unrolled_objective(
@@ -90,4 +90,4 @@ def unrolled_objective(
         temperature,
         create_graph,
     )
-    return reconstruction_objective(model, final_state, objective_batch)
+    return classification_objective(model, final_state, objective_batch)

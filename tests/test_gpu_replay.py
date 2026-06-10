@@ -36,14 +36,14 @@ def _cuda_fixture(steps: int) -> OracleFixture:
     trajectory = tuple(
         InnerBatch(
             batch.images.to(device=device, dtype=dtype),
-            batch.patch_mask.to(device),
+            batch.labels.to(device),
             batch.group_ids.to(device),
         )
         for batch in fixture.trajectory
     )
     objective_batch = ObjectiveBatch(
         fixture.objective_batch.images.to(device=device, dtype=dtype),
-        fixture.objective_batch.patch_mask.to(device),
+        fixture.objective_batch.labels.to(device),
     )
     return OracleFixture(
         model=fixture.model.to(device=device, dtype=dtype),

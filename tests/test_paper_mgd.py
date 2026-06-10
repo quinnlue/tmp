@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-
 import pytest
 import torch
 from torch import Tensor, nn
@@ -33,13 +31,17 @@ from recursive_replay import ReplayCheckpointConfig
 def oracle_pool() -> CandidatePool:
     fixture = make_oracle_fixture(steps=1)
     images = fixture.trajectory[0].images
-    return CandidatePool(images, torch.tensor([10, 11, 12, 13]))
+    return CandidatePool(
+        images, torch.tensor([10, 11, 12, 13]), torch.tensor([0, 0, 1, 1])
+    )
 
 
 def oracle_paper_setup(steps: int = 4, counts: Tensor | None = None):
     fixture = make_oracle_fixture(steps=steps)
     pool = CandidatePool(
-        fixture.trajectory[0].images, torch.tensor([10, 11, 12, 13])
+        fixture.trajectory[0].images,
+        torch.tensor([10, 11, 12, 13]),
+        torch.tensor([0, 0, 1, 1]),
     )
     counts = counts if counts is not None else initialize_counts(pool.num_candidates)
     trajectory = build_count_trajectory(
@@ -47,20 +49,10 @@ def oracle_paper_setup(steps: int = 4, counts: Tensor | None = None):
         counts,
         inner_steps=steps,
         batch_size=4,
-        num_patches=fixture.model.config.num_patches,
-        mask_ratio=fixture.model.config.mask_ratio,
-        mask_seed=9,
         shuffle_seed=17,
     )
     selected = torch.tensor([0, 2], dtype=torch.long)
-    probe = make_probe_batch(
-        pool,
-        selected,
-        perturbation_step=1,
-        num_patches=fixture.model.config.num_patches,
-        mask_ratio=fixture.model.config.mask_ratio,
-        mask_seed=21,
-    )
+    probe = make_probe_batch(pool, selected)
     return fixture, pool, counts, trajectory, selected, probe
 
 
@@ -88,7 +80,7 @@ def test_count_schedule_is_deterministic_honors_counts_and_preserves_budget() ->
     )
 
 
-def test_count_trajectory_has_stable_ids_masks_and_fixed_batch_budget() -> None:
+def test_count_trajectory_has_stable_ids_labels_and_fixed_batch_budget() -> None:
     pool = oracle_pool()
     counts = torch.tensor([2, 0, 1, 1])
     first = build_count_trajectory(
@@ -96,9 +88,6 @@ def test_count_trajectory_has_stable_ids_masks_and_fixed_batch_budget() -> None:
         counts,
         inner_steps=3,
         batch_size=2,
-        num_patches=4,
-        mask_ratio=0.5,
-        mask_seed=5,
         shuffle_seed=6,
     )
     second = build_count_trajectory(
@@ -106,9 +95,6 @@ def test_count_trajectory_has_stable_ids_masks_and_fixed_batch_budget() -> None:
         counts,
         inner_steps=3,
         batch_size=2,
-        num_patches=4,
-        mask_ratio=0.5,
-        mask_seed=5,
         shuffle_seed=6,
     )
 
@@ -118,7 +104,7 @@ def test_count_trajectory_has_stable_ids_masks_and_fixed_batch_budget() -> None:
         assert 1 not in actual.candidate_indices
         assert torch.equal(actual.candidate_indices, repeated.candidate_indices)
         assert torch.equal(actual.images, repeated.images)
-        assert torch.equal(actual.patch_mask, repeated.patch_mask)
+        assert torch.equal(actual.labels, repeated.labels)
 
 
 def test_zero_surrogate_exactly_matches_ordinary_unweighted_training() -> None:
@@ -140,7 +126,7 @@ def test_zero_surrogate_exactly_matches_ordinary_unweighted_training() -> None:
     ordinary_trajectory = tuple(
         InnerBatch(
             batch.images,
-            batch.patch_mask,
+            batch.labels,
             torch.zeros(batch.images.shape[0], dtype=torch.long),
         )
         for batch in trajectory
@@ -161,7 +147,9 @@ def test_zero_surrogate_exactly_matches_ordinary_unweighted_training() -> None:
 def test_only_selected_coordinates_receive_gradients_including_zero_count() -> None:
     fixture = make_oracle_fixture(steps=3)
     pool = CandidatePool(
-        fixture.trajectory[0].images, torch.tensor([10, 11, 12, 13])
+        fixture.trajectory[0].images,
+        torch.tensor([10, 11, 12, 13]),
+        torch.tensor([0, 0, 1, 1]),
     )
     selected = shard_coordinates(pool.num_candidates, fraction=0.5, seed=4)
     counts = torch.ones(4, dtype=torch.long)
@@ -173,8 +161,6 @@ def test_only_selected_coordinates_receive_gradients_including_zero_count() -> N
         update_policy="fixed_budget_ranked",
         coordinate_fraction=0.5,
         exchange_fraction=0.5,
-        mask_seed=9,
-        probe_mask_seed=21,
         shuffle_seed=17,
         selection_seed=4,
         branching_factor=2,
@@ -366,30 +352,36 @@ def test_fixed_budget_ranked_update_preserves_budget_and_revives_removed_sample(
     assert update.counts.sum() == counts.sum()
 
 
-class ConstantPatchModel(nn.Module):
-    """One-parameter reconstruction model for the count-shift sanity test."""
+class ConstantLogitModel(nn.Module):
+    """Image-agnostic two-class model for the count-shift sanity test.
+
+    Logits are a free parameter shared across the batch, so a candidate's effect
+    on the objective is determined entirely by its class label: training on a
+    target-class (label 0) example lowers the held-out target-class loss, while a
+    distractor (label 1) example raises it.
+    """
 
     def __init__(self) -> None:
         super().__init__()
-        self.config = SimpleNamespace(num_patches=1, mask_ratio=1.0)
-        self.prediction = nn.Parameter(torch.tensor(0.0, dtype=torch.float64))
+        self.class_logits = nn.Parameter(torch.zeros(2, dtype=torch.float64))
 
-    def forward(self, images: Tensor, patch_mask: Tensor) -> Tensor:
-        return self.prediction.expand(images.shape[0], 1, 3 * 2 * 2)
+    def forward(self, images: Tensor) -> Tensor:
+        return self.class_logits.unsqueeze(0).expand(images.shape[0], 2)
 
 
 def test_tiny_end_to_end_count_mgd_shifts_toward_useful_samples_and_lowers_loss() -> None:
-    model = ConstantPatchModel()
+    model = ConstantLogitModel()
     initial_state = initialize_train_state(model)
     useful = torch.ones(2, 3, 2, 2, dtype=torch.float64)
     distractors = torch.zeros(2, 3, 2, 2, dtype=torch.float64)
     pool = CandidatePool(
         torch.cat((useful, distractors)),
         torch.tensor([10, 11, 12, 13]),
+        torch.tensor([0, 0, 1, 1]),
     )
     objective_batch = ObjectiveBatch(
         torch.ones(2, 3, 2, 2, dtype=torch.float64),
-        torch.ones(2, 1, dtype=torch.bool),
+        torch.zeros(2, dtype=torch.long),
     )
     optimizer_config = SmoothAdamWConfig(
         learning_rate=0.1, betas=(0.8, 0.9), eps=0.1, weight_decay=0.0
@@ -401,8 +393,6 @@ def test_tiny_end_to_end_count_mgd_shifts_toward_useful_samples_and_lowers_loss(
         update_policy="fixed_budget_ranked",
         coordinate_fraction=1.0,
         exchange_fraction=0.5,
-        mask_seed=5,
-        probe_mask_seed=6,
         shuffle_seed=7,
         selection_seed=8,
         branching_factor=2,
@@ -482,9 +472,7 @@ def test_empty_bernoulli_probe_is_a_valid_noop_metagradient() -> None:
     selected = bernoulli_coordinates(pool.num_candidates, probability=0.0, seed=1)
     probe = PaperProbeBatch(
         pool.images[:0],
-        torch.empty(
-            0, fixture.model.config.num_patches, dtype=torch.bool
-        ),
+        torch.empty(0, dtype=torch.long),
         selected,
     )
     perturbations = torch.zeros(0, dtype=torch.float64, requires_grad=True)

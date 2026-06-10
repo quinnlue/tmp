@@ -8,7 +8,7 @@ from torch import Tensor, nn
 from tqdm import tqdm
 
 from functional_train import SmoothAdamWConfig, TrainState, weighted_inner_step
-from metagrad import InnerBatch, ObjectiveBatch, reconstruction_objective
+from metagrad import InnerBatch, ObjectiveBatch, classification_objective
 from recursive_replay import (
     ReplayCheckpointConfig,
     recursive_replay_state as _recursive_replay_state,
@@ -41,7 +41,7 @@ def recursive_replay_state(
             model,
             state,
             batch.images,
-            batch.patch_mask,
+            batch.labels,
             batch.group_ids,
             replay_logits,
             base_group_masses,
@@ -87,7 +87,7 @@ def replay_objective(
         branching_factor=branching_factor,
         checkpoint_config=checkpoint_config,
     )
-    return reconstruction_objective(model, final_state, objective_batch)
+    return classification_objective(model, final_state, objective_batch)
 
 
 def replay_metagradient(
@@ -146,7 +146,7 @@ def replay_metagradient(
                 progress_callback=update_progress,
                 checkpoint_config=checkpoint_config,
             )
-            objective = reconstruction_objective(model, final_state, objective_batch)
+            objective = classification_objective(model, final_state, objective_batch)
             (metagradient,) = torch.autograd.grad(objective, logits)
         finally:
             finished.set()

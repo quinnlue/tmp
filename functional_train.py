@@ -7,7 +7,7 @@ import torch
 from torch import Tensor, nn
 from torch.func import functional_call
 
-from mae import per_example_masked_reconstruction_loss
+from model import per_example_cross_entropy_loss
 from weighting import weighted_example_loss
 
 
@@ -95,7 +95,7 @@ def weighted_inner_step(
     model: nn.Module,
     state: TrainState,
     images: Tensor,
-    patch_mask: Tensor,
+    labels: Tensor,
     group_ids: Tensor,
     logits: Tensor,
     base_group_masses: Tensor,
@@ -104,11 +104,9 @@ def weighted_inner_step(
     create_graph: bool = True,
 ) -> tuple[TrainState, Tensor]:
     predictions = functional_call(
-        model, (state.parameters, state.buffers), (images, patch_mask)
+        model, (state.parameters, state.buffers), (images,)
     )
-    per_example_loss = per_example_masked_reconstruction_loss(
-        images, predictions, patch_mask
-    )
+    per_example_loss = per_example_cross_entropy_loss(predictions, labels)
     loss = weighted_example_loss(
         per_example_loss, logits, group_ids, base_group_masses, temperature
     )
