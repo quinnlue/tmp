@@ -1,0 +1,91 @@
+{
+  "config": {
+    "epochs": 25,
+    "batch": 512,
+    "wd": 0.0005,
+    "seed": 0,
+    "n_val": 5000
+  },
+  "results": [
+    {
+      "routine": "baseline",
+      "lr": 0.1,
+      "epochs": 25,
+      "val_best_acc": 0.8916,
+      "val_final_acc": 0.89,
+      "test_acc": 0.8861,
+      "test_loss": 0.3577420684814453,
+      "minutes": 1.6034516175587972
+    },
+    {
+      "routine": "baseline",
+      "lr": 0.2,
+      "epochs": 25,
+      "val_best_acc": 0.9242,
+      "val_final_acc": 0.924,
+      "test_acc": 0.912,
+      "test_loss": 0.29678399658203125,
+      "minutes": 1.4212332208951315
+    },
+    {
+      "routine": "smooth",
+      "lr": 0.1,
+      "epochs": 25,
+      "val_best_acc": 0.919,
+      "val_final_acc": 0.919,
+      "test_acc": 0.9123,
+      "test_loss": 0.26688771057128907,
+      "minutes": 1.1985419789950054
+    },
+    {
+      "routine": "smooth",
+      "lr": 0.3,
+      "epochs": 25,
+      "val_best_acc": 0.9364,
+      "val_final_acc": 0.9364,
+      "test_acc": 0.9182,
+      "test_loss": 0.24723952178955078,
+      "minutes": 1.1971280217170714
+    },
+    {
+      "routine": "smooth",
+      "lr": 0.6,
+      "epochs": 25,
+      "val_best_acc": 0.9384,
+      "val_final_acc": 0.9384,
+      "test_acc": 0.9312,
+      "test_loss": 0.21275821380615234,
+      "minutes": 1.19623970190684
+    },
+    {
+      "routine": "smooth",
+      "lr": 1.0,
+      "epochs": 25,
+      "val_best_acc": 0.9362,
+      "val_final_acc": 0.9362,
+      "test_acc": 0.9294,
+      "test_loss": 0.21586832580566406,
+      "minutes": 1.1951586723327636
+    },
+    {
+      "routine": "smooth_wide",
+      "lr": 0.3,
+      "epochs": 25,
+      "val_best_acc": 0.9402,
+      "val_final_acc": 0.9402,
+      "test_acc": 0.9289,
+      "test_loss": 0.22184675598144532,
+      "minutes": 3.3493021845817568
+    },
+    {
+      "routine": "smooth_wide",
+      "lr": 0.6,
+      "epochs": 25,
+      "val_best_acc": 0.9454,
+      "val_final_acc": 0.9446,
+      "test_acc": 0.9369,
+      "test_loss": 0.19674905548095703,
+      "minutes": 3.0494530320167543
+    }
+  ]
+}
