@@ -7,7 +7,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-with open("metasmooth_results.json") as fh:
+with open("artifacts/metasmooth_results.json") as fh:
     blob = json.load(fh)
 cfg = blob["config"]
 rows = blob["results"]
@@ -62,5 +62,5 @@ for ax in axes:
         lbl.set_ha("right")
 fig.suptitle("Metasmoothness of the ResNet-9 / CIFAR-10 routine (per-cluster data weights)")
 plt.tight_layout()
-plt.savefig("metasmooth_results.png", dpi=110, bbox_inches="tight")
-print("\nwrote metasmooth_results.png")
+plt.savefig("artifacts/metasmooth_results.png", dpi=110, bbox_inches="tight")
+print("\nwrote artifacts/metasmooth_results.png")

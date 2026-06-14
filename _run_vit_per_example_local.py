@@ -37,7 +37,7 @@ from functional_train import (
 from model import VisionTransformerClassifier, cross_entropy_loss
 
 DATA_DIR = os.environ.get("CIFAR_DIR", "./data")
-OUT = os.environ.get("OUT", "vit_per_example_results.json")
+OUT = os.environ.get("OUT", "artifacts/vit_per_example_results.json")
 N_TRAIN = int(os.environ.get("N_TRAIN", "4000"))
 N_VAL = int(os.environ.get("N_VAL", "2000"))
 EPOCHS = int(os.environ.get("EPOCHS", "20"))

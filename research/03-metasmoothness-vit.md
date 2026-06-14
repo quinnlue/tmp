@@ -230,12 +230,12 @@ C:/Users/luequ/micromamba/envs/torch311/python.exe _run_vit_metasmooth_local.py
 #   defaults: N_TRAIN=4000 N_VAL=2000 EPOCHS=20 BATCH=500
 #             DIM=192 DEPTH=6 HEADS=6 PATCH=8 MLP_RATIO=2.0
 #             H=0.05 HEAD_DIRS=4 PE_DIRS=3 ABL_DIRS=3 MAX_MINUTES=360
-#   -> vit_metasmooth_results.json   (written after every bench)
+#   -> artifacts/vit_metasmooth_results.json   (written after every bench)
 
 # Phase B — does the smooth menu cost accuracy?
 C:/Users/luequ/micromamba/envs/torch311/python.exe _run_vit_smooth_train_local.py
 #   defaults: N_TRAIN=20000 N_VAL=5000 EPOCHS=30 ... MAX_MINUTES=240
-#   -> vit_train_results.json
+#   -> artifacts/vit_train_results.json
 
 # render tables + PNGs
 C:/Users/luequ/micromamba/envs/torch311/python.exe _render_vit_results.py

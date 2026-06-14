@@ -13,7 +13,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-PATH = sys.argv[1] if len(sys.argv) > 1 else "metasmooth_vm_results.json"
+PATH = sys.argv[1] if len(sys.argv) > 1 else "artifacts/metasmooth_vm_results.json"
 with open(PATH) as fh:
     blob = json.load(fh)
 cfg, rows = blob["config"], blob["results"]
@@ -103,8 +103,8 @@ for ax in axes:
 fig.suptitle(f"Metasmoothness ranking (per-cluster, n_train={cfg['n_train']}, "
              f"{cfg['epochs']} ep, fp32)")
 plt.tight_layout()
-plt.savefig("metasmooth_vm_ranking.png", dpi=110, bbox_inches="tight")
-print("\nwrote metasmooth_vm_ranking.png")
+plt.savefig("artifacts/metasmooth_vm_ranking.png", dpi=110, bbox_inches="tight")
+print("\nwrote artifacts/metasmooth_vm_ranking.png")
 
 # Smoothness vs accuracy (Fig-4 style tradeoff).
 fig2, ax = plt.subplots(figsize=(6.2, 5))
@@ -116,5 +116,5 @@ ax.set_ylabel(r"empirical metasmoothness $\hat S$")
 ax.set_title("smoothness vs accuracy (per-cluster)")
 ax.grid(True, alpha=.3)
 plt.tight_layout()
-plt.savefig("metasmooth_vm_tradeoff.png", dpi=110, bbox_inches="tight")
-print("wrote metasmooth_vm_tradeoff.png")
+plt.savefig("artifacts/metasmooth_vm_tradeoff.png", dpi=110, bbox_inches="tight")
+print("wrote artifacts/metasmooth_vm_tradeoff.png")

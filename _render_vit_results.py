@@ -19,8 +19,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-PATH_A = sys.argv[1] if len(sys.argv) > 1 else "vit_metasmooth_results.json"
-PATH_B = sys.argv[2] if len(sys.argv) > 2 else "vit_train_results.json"
+PATH_A = sys.argv[1] if len(sys.argv) > 1 else "artifacts/vit_metasmooth_results.json"
+PATH_B = sys.argv[2] if len(sys.argv) > 2 else "artifacts/vit_train_results.json"
 
 with open(PATH_A) as fh:
     blob = json.load(fh)
@@ -124,8 +124,8 @@ for ax in axes:
 fig.suptitle(f"ViT metasmoothness ranking (per-cluster, n_train={cfg['n_train']}, "
              f"{cfg['epochs']} ep, dim={cfg['dim']} depth={cfg['depth']}, fp32)")
 plt.tight_layout()
-plt.savefig("vit_metasmooth_ranking.png", dpi=110, bbox_inches="tight")
-print("\nwrote vit_metasmooth_ranking.png")
+plt.savefig("artifacts/vit_metasmooth_ranking.png", dpi=110, bbox_inches="tight")
+print("\nwrote artifacts/vit_metasmooth_ranking.png")
 
 fig2, ax = plt.subplots(figsize=(6.2, 5))
 ax.scatter(acc, shat, c=colors, s=70, zorder=3)
@@ -136,5 +136,5 @@ ax.set_ylabel(r"empirical metasmoothness $\hat S$")
 ax.set_title("ViT smoothness vs accuracy (per-cluster)")
 ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig("vit_metasmooth_tradeoff.png", dpi=110, bbox_inches="tight")
-print("wrote vit_metasmooth_tradeoff.png")
+plt.savefig("artifacts/vit_metasmooth_tradeoff.png", dpi=110, bbox_inches="tight")
+print("wrote artifacts/vit_metasmooth_tradeoff.png")

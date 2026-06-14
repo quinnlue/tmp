@@ -26,7 +26,7 @@ import torch
 import metasmooth as ms
 
 DATA_DIR = os.environ.get("CIFAR_DIR", "/workspace/tmp/data")
-OUT = os.environ.get("OUT", "metasmooth_vm_results.json")
+OUT = os.environ.get("OUT", "artifacts/metasmooth_vm_results.json")
 
 N_TRAIN = int(os.environ.get("N_TRAIN", "6000"))
 N_VAL = int(os.environ.get("N_VAL", "2000"))

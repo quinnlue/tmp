@@ -29,7 +29,7 @@ from _vit_menu import BASELINE_VIT, SMOOTH_VIT, SMOOTH_WIDE_VIT, ViTGeometry
 from model import VisionTransformerClassifier
 
 DATA_DIR = os.environ.get("CIFAR_DIR", "./data")
-OUT = os.environ.get("OUT", "vit_train_results.json")
+OUT = os.environ.get("OUT", "artifacts/vit_train_results.json")
 EPOCHS = int(os.environ.get("EPOCHS", "30"))
 BATCH = int(os.environ.get("BATCH", "500"))
 WD = float(os.environ.get("WD", "0.05"))

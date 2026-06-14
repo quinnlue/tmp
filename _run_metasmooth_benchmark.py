@@ -15,7 +15,7 @@ import torch
 import metasmooth as ms
 
 DATA_DIR = "C:/ml/dataset-curation/meta-grad-descent-w-clustering/data"
-OUT = "metasmooth_results.json"
+OUT = "artifacts/metasmooth_results.json"
 
 # Scale (laptop demo; scale up n_train/epochs/num_directions on the VM).
 N_TRAIN = 3000

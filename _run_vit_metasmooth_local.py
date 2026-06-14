@@ -63,7 +63,7 @@ from model import ViTConfig, VisionTransformerClassifier, cross_entropy_loss
 # Config
 # --------------------------------------------------------------------------- #
 DATA_DIR = os.environ.get("CIFAR_DIR", "./data")
-OUT = os.environ.get("OUT", "vit_metasmooth_results.json")
+OUT = os.environ.get("OUT", "artifacts/vit_metasmooth_results.json")
 
 N_TRAIN = int(os.environ.get("N_TRAIN", "4000"))
 N_VAL = int(os.environ.get("N_VAL", "2000"))

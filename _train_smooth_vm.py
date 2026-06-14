@@ -27,7 +27,7 @@ from torch.nn import functional as F
 import metasmooth as ms
 
 DATA_DIR = os.environ.get("CIFAR_DIR", "/workspace/tmp/data")
-OUT = os.environ.get("OUT", "train_smooth_vm_results.json")
+OUT = os.environ.get("OUT", "artifacts/train_smooth_vm_results.json")
 EPOCHS = int(os.environ.get("EPOCHS", "25"))
 BATCH = int(os.environ.get("BATCH", "512"))
 WD = float(os.environ.get("WD", "5e-4"))

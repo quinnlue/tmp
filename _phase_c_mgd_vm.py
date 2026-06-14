@@ -37,7 +37,7 @@ from metagrad import InnerBatch, ObjectiveBatch, train_unrolled, classification_
 from recursive_replay import recursive_replay_state
 
 DATA_DIR = os.environ.get("CIFAR_DIR", "/workspace/tmp/data")
-OUT = os.environ.get("OUT", "phase_c_mgd_results.json")
+OUT = os.environ.get("OUT", "artifacts/phase_c_mgd_results.json")
 N_POOL = int(os.environ.get("N_POOL", "4000"))      # curation training pool
 N_OBJ = int(os.environ.get("N_OBJ", "2000"))        # held-out objective (MGD target)
 N_VAL = int(os.environ.get("N_VAL", "2000"))        # separate validation (generalization)
