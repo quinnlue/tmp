@@ -45,6 +45,7 @@ recovers ordinary unweighted training.
 from __future__ import annotations
 
 import math
+import os
 from dataclasses import dataclass, replace
 from typing import Callable, Literal
 
@@ -110,6 +111,14 @@ class Routine:
         Replace the ``ReLU`` (a non-smooth max) with a smooth ``GELU``.  Off by
         default to stay close to the paper's listed menu; a clearly relevant and
         cheap extra lever.
+    norm
+        Normalization layer: ``"bn"`` (BatchNorm, the default / paper choice) or
+        ``"gn"`` (GroupNorm).  GroupNorm has no running-stat buffers, which makes
+        exact metagradients through training trivial (the functional engine holds
+        buffers fixed) -- useful for the curation model in Phase C.  ``bn_before_act``
+        is reinterpreted as "norm before activation".
+    gn_groups
+        Number of GroupNorm groups (used only when ``norm == "gn"``).
     name
         Human-readable label used in reports.
     """
@@ -119,6 +128,8 @@ class Routine:
     final_scale: float = 1.0
     width: float = 1.0
     smooth_act: bool = False
+    norm: Literal["bn", "gn"] = "bn"
+    gn_groups: int = 8
     name: str = "baseline"
 
     def __post_init__(self) -> None:
@@ -128,6 +139,10 @@ class Routine:
             raise ValueError("final_scale must be positive")
         if self.width <= 0:
             raise ValueError("width must be positive")
+        if self.norm not in ("bn", "gn"):
+            raise ValueError("norm must be 'bn' or 'gn'")
+        if self.gn_groups <= 0:
+            raise ValueError("gn_groups must be positive")
 
 
 # Mirrors the notebook's ResNet-9 exactly: max pooling, BN-before-ReLU,
@@ -156,6 +171,20 @@ SMOOTH_WIDE_ROUTINE = Routine(
     name="smooth_wide",
 )
 
+# The smooth routine with GroupNorm instead of BatchNorm.  GroupNorm has no
+# running-stat buffers, so exact metagradients through training are clean (the
+# functional engine holds buffers fixed) -- this is the curation model for Phase
+# C.  Re-check its metasmoothness with the Phase-A benchmark before trusting it.
+SMOOTH_GN_ROUTINE = Routine(
+    pool="avg",
+    bn_before_act=True,
+    final_scale=10.0,
+    width=1.0,
+    smooth_act=False,
+    norm="gn",
+    name="smooth_gn",
+)
+
 
 def _pool2x2(x: Tensor, mode: str) -> Tensor:
     """Atomics-free (hence deterministic) 2x2 stride-2 spatial pooling."""
@@ -170,16 +199,23 @@ def _global_pool(x: Tensor, mode: str) -> Tensor:
     return x.amax(dim=(2, 3)) if mode == "max" else x.mean(dim=(2, 3))
 
 
+def _make_norm(out_ch: int, norm: str, gn_groups: int) -> nn.Module:
+    if norm == "gn":
+        groups = gn_groups if out_ch % gn_groups == 0 else 1
+        return nn.GroupNorm(groups, out_ch)
+    return nn.BatchNorm2d(out_ch)
+
+
 class ConvBlock(nn.Module):
-    """Conv -> (BN/act in the configured order), with optional 2x2 pool."""
+    """Conv -> (norm/act in the configured order), with optional 2x2 pool."""
 
     def __init__(
         self, in_ch: int, out_ch: int, *, pool: str, bn_before_act: bool,
-        smooth_act: bool,
+        smooth_act: bool, norm: str = "bn", gn_groups: int = 8,
     ) -> None:
         super().__init__()
         self.conv = nn.Conv2d(in_ch, out_ch, 3, 1, 1, bias=False)
-        self.bn = nn.BatchNorm2d(out_ch)
+        self.norm = _make_norm(out_ch, norm, gn_groups)
         self.act = nn.GELU() if smooth_act else nn.ReLU(inplace=False)
         self.bn_before_act = bn_before_act
         self.pool = pool
@@ -188,9 +224,9 @@ class ConvBlock(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         x = self.conv(x)
         if self.bn_before_act:
-            x = self.act(self.bn(x))
+            x = self.act(self.norm(x))
         else:
-            x = self.bn(self.act(x))
+            x = self.norm(self.act(x))
         if self.do_pool:
             x = _pool2x2(x, self.pool)
         return x
@@ -211,6 +247,7 @@ class ResNet9(nn.Module):
             b = ConvBlock(
                 cin, cout, pool=routine.pool,
                 bn_before_act=routine.bn_before_act, smooth_act=routine.smooth_act,
+                norm=routine.norm, gn_groups=routine.gn_groups,
             )
             b.do_pool = pool
             return b
@@ -279,16 +316,28 @@ def load_cifar_subset(
     Train and val examples are disjoint draws from the official training split
     (so labels are available for both); no random crop/flip is applied, since
     metasmoothness requires the algorithm's only varying input to be ``z``.
-    """
-    from torchvision import datasets
 
-    raw = datasets.CIFAR10(root=data_dir, train=True, download=True)
-    images = torch.from_numpy(raw.data).float().div_(255.0)  # [N, 32, 32, 3]
+    If ``{data_dir}/cifar10_train.npz`` exists (keys ``images`` uint8
+    ``[N, 32, 32, 3]`` and ``labels`` ``[N]``) it is used directly; this lets
+    environments where the torchvision mirror is throttled prebuild the cache
+    (see ``_build_cifar_cache.py``).  Otherwise torchvision downloads CIFAR-10.
+    """
+    cache = os.path.join(data_dir, "cifar10_train.npz")
+    if os.path.exists(cache):
+        blob = np.load(cache)
+        data_np, targets = blob["images"], blob["labels"].tolist()
+    else:
+        from torchvision import datasets
+
+        raw = datasets.CIFAR10(root=data_dir, train=True, download=True)
+        data_np, targets = raw.data, raw.targets
+
+    images = torch.from_numpy(data_np).float().div_(255.0)  # [N, 32, 32, 3]
     images = images.permute(0, 3, 1, 2).contiguous()  # [N, 3, 32, 32]
     mean = torch.tensor(_CIFAR_MEAN).view(1, 3, 1, 1)
     std = torch.tensor(_CIFAR_STD).view(1, 3, 1, 1)
     images = (images - mean) / std
-    labels = torch.tensor(raw.targets, dtype=torch.long)
+    labels = torch.tensor(targets, dtype=torch.long)
 
     if n_train + n_val > images.shape[0]:
         raise ValueError("n_train + n_val exceeds the CIFAR-10 training split")
@@ -412,6 +461,7 @@ class RunResult:
     theta: Tensor  # flattened trained parameters (CPU float32)
     val_loss: float  # held-out cross-entropy (the output function phi)
     train_loss: float
+    val_acc: float = 0.0  # held-out top-1 accuracy (for smoothness-vs-accuracy)
 
 
 def _flat_params(model: nn.Module) -> Tensor:
@@ -493,11 +543,13 @@ def run_algorithm(
     with torch.no_grad(), torch.autocast("cuda", dtype=autocast_dtype, enabled=use_amp):
         val_logits = model(subset.val_images).float()
         val_loss = F.cross_entropy(val_logits, subset.val_labels).item()
+        val_acc = (val_logits.argmax(1) == subset.val_labels).float().mean().item()
 
     return RunResult(
         theta=_flat_params(model).float().cpu(),
         val_loss=val_loss,
         train_loss=last_train_loss,
+        val_acc=val_acc,
     )
 
 
@@ -515,6 +567,7 @@ class DirectionResult:
     f2h: float
     first_diff: float  # Delta_f(z;v) = (f_h - f_0)/h
     second_diff: float  # f_2h - 2 f_h + f_0
+    acc0: float = 0.0  # held-out top-1 accuracy at z0
 
 
 def measure_direction(
@@ -554,6 +607,7 @@ def measure_direction(
         f2h=f2h,
         first_diff=(fh - f0) / h,
         second_diff=second_diff,
+        acc0=r0.val_acc,
     )
 
 
@@ -586,6 +640,11 @@ class BenchmarkResult:
         return float(np.std(self.s_curvature))
 
     @property
+    def val_acc(self) -> float:
+        """Held-out top-1 accuracy at ``z = 0`` (same across directions)."""
+        return self.directions[0].acc0
+
+    @property
     def s_hat_mean(self) -> float:
         return float(np.nanmean(self.s_hat))
 
@@ -596,7 +655,7 @@ class BenchmarkResult:
     def summary(self) -> str:
         return (
             f"{self.routine:<10s} | z={self.metaparam_kind:<11s} | "
-            f"f0={self.f0:.4f} | "
+            f"f0={self.f0:.4f} acc={self.val_acc:.3f} | "
             f"S(Def1) {self.s_curvature_mean:9.3f} +/- {self.s_curvature_std:7.3f} "
             f"(lower=smoother) | "
             f"S_hat(Def2) {self.s_hat_mean:+.4f} +/- {self.s_hat_std:.4f} "

@@ -1,5 +1,25 @@
+# Python
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .ipynb_checkpoints/
 tmp/
+
+# Linked git worktrees (kept out of the consolidated branch; the underlying
+# branches codex/* and claude/* remain as provenance refs)
+.worktrees/
+.claude/worktrees/
+
+# Local data caches and run logs (regenerate from the loaders / runners)
+data/
+wandb/
+logs/
+*.log
+
+# Large binary artifacts (checkpoints, feature caches, datasets).
+# Result JSON/Markdown/PNG under artifacts/ are kept.
+*.pt
+*.pth
+*.npz
+*.parquet
+*.ckpt
