@@ -1,0 +1,153 @@
+{
+  "config": {
+    "model": "vit",
+    "metaparam": "per_example",
+    "n_train": 4000,
+    "n_val": 2000,
+    "epochs": 18,
+    "batch": 500,
+    "lr": 0.002,
+    "eps": 0.0001,
+    "dim": 192,
+    "depth": 6,
+    "heads": 6,
+    "patch": 8,
+    "dirs": 3,
+    "amp": "off",
+    "device": "cuda"
+  },
+  "results": [
+    {
+      "stage": "menu",
+      "routine": "baseline",
+      "h": 0.05,
+      "num_directions": 3,
+      "f0": 1.8018816709518433,
+      "val_acc": 0.4100000262260437,
+      "s_curvature_mean": 3.6892890930175777,
+      "s_curvature_std": 1.5849847310053211,
+      "s_hat_mean": 0.783431867758433,
+      "s_hat_std": 0.030536102508386915
+    },
+    {
+      "stage": "menu",
+      "routine": "final/10",
+      "h": 0.05,
+      "num_directions": 3,
+      "f0": 1.6993755102157593,
+      "val_acc": 0.3865000307559967,
+      "s_curvature_mean": 5.057811737060546,
+      "s_curvature_std": 2.2532630310216186,
+      "s_hat_mean": 0.17568296690781912,
+      "s_hat_std": 0.03262553637677545
+    },
+    {
+      "stage": "menu",
+      "routine": "final/30",
+      "h": 0.05,
+      "num_directions": 3,
+      "f0": 1.89109468460083,
+      "val_acc": 0.3395000100135803,
+      "s_curvature_mean": 3.5144488016764317,
+      "s_curvature_std": 1.7069838165134679,
+      "s_hat_mean": 0.09631206654012203,
+      "s_hat_std": 0.08236846858261623
+    },
+    {
+      "stage": "menu",
+      "routine": "depth_x2",
+      "h": 0.05,
+      "num_directions": 3,
+      "f0": 1.7489173412322998,
+      "val_acc": 0.4285000264644623,
+      "s_curvature_mean": 13.10321489969889,
+      "s_curvature_std": 8.229390348769805,
+      "s_hat_mean": 0.2894941071669261,
+      "s_hat_std": 0.07482855400070332
+    },
+    {
+      "stage": "menu",
+      "routine": "relu",
+      "h": 0.05,
+      "num_directions": 3,
+      "f0": 1.8166568279266357,
+      "val_acc": 0.4100000262260437,
+      "s_curvature_mean": 4.153124491373697,
+      "s_curvature_std": 2.2137206649923815,
+      "s_hat_mean": 0.7479043205579122,
+      "s_hat_std": 0.02501211663894387
+    },
+    {
+      "stage": "h_sweep",
+      "routine": "baseline",
+      "h": 0.1,
+      "num_directions": 3,
+      "f0": 1.8018816709518433,
+      "val_acc": 0.4100000262260437,
+      "s_curvature_mean": 1.5555898348490393,
+      "s_curvature_std": 1.7411216332047086,
+      "s_hat_mean": 0.5944430033365885,
+      "s_hat_std": 0.011903932904563356
+    },
+    {
+      "stage": "h_sweep",
+      "routine": "final/10",
+      "h": 0.1,
+      "num_directions": 3,
+      "f0": 1.6993755102157593,
+      "val_acc": 0.3865000307559967,
+      "s_curvature_mean": 1.1377612749735513,
+      "s_curvature_std": 0.9465569627200995,
+      "s_hat_mean": 0.1733435889085134,
+      "s_hat_std": 0.05072273988219401
+    },
+    {
+      "stage": "h_sweep",
+      "routine": "baseline",
+      "h": 0.2,
+      "num_directions": 3,
+      "f0": 1.8018816709518433,
+      "val_acc": 0.4100000262260437,
+      "s_curvature_mean": 1.1780977249145506,
+      "s_curvature_std": 0.37286858343385654,
+      "s_hat_mean": 0.4671238462130229,
+      "s_hat_std": 0.06735281155780512
+    },
+    {
+      "stage": "h_sweep",
+      "routine": "final/10",
+      "h": 0.2,
+      "num_directions": 3,
+      "f0": 1.6993755102157593,
+      "val_acc": 0.3865000307559967,
+      "s_curvature_mean": 0.29611587524414057,
+      "s_curvature_std": 0.054281635566864835,
+      "s_hat_mean": 0.20773816108703613,
+      "s_hat_std": 0.024423466213017955
+    },
+    {
+      "stage": "h_sweep",
+      "routine": "baseline",
+      "h": 0.4,
+      "num_directions": 3,
+      "f0": 1.8018816709518433,
+      "val_acc": 0.4100000262260437,
+      "s_curvature_mean": 0.2744890749454498,
+      "s_curvature_std": 0.17501603502968702,
+      "s_hat_mean": 0.41144288579622906,
+      "s_hat_std": 0.028961013772294167
+    },
+    {
+      "stage": "h_sweep",
+      "routine": "final/10",
+      "h": 0.4,
+      "num_directions": 3,
+      "f0": 1.6993755102157593,
+      "val_acc": 0.3865000307559967,
+      "s_curvature_mean": 0.19640425841013587,
+      "s_curvature_std": 0.04076689128559783,
+      "s_hat_mean": 0.2575957924127579,
+      "s_hat_std": 0.01800279312900471
+    }
+  ]
+}

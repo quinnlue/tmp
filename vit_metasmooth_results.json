@@ -1,0 +1,447 @@
+{
+  "config": {
+    "model": "vit",
+    "n_train": 4000,
+    "n_val": 2000,
+    "epochs": 20,
+    "batch_size": 500,
+    "lr": 0.002,
+    "eps": 0.0001,
+    "betas": [
+      0.9,
+      0.99
+    ],
+    "weight_decay": 0.0,
+    "warmup_frac": 0.3,
+    "temperature": 1.0,
+    "dim": 192,
+    "depth": 6,
+    "heads": 6,
+    "patch": 8,
+    "mlp_ratio": 2.0,
+    "h": 0.05,
+    "head_dirs": 4,
+    "pe_dirs": 3,
+    "abl_dirs": 3,
+    "dir_seed": 1000,
+    "amp": "off",
+    "device": "cuda",
+    "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU"
+  },
+  "results": [
+    {
+      "stage": "head",
+      "routine": "baseline",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 4,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.9603028297424316,
+      "val_acc": 0.41350001096725464,
+      "s_curvature": [
+        22.44629859924316,
+        11.200475692749022,
+        16.25852584838867,
+        13.775348663330075
+      ],
+      "s_curvature_mean": 15.92016220092773,
+      "s_curvature_std": 4.170749695614893,
+      "s_curvature_median": 15.016937255859371,
+      "s_hat": [
+        0.28418293595314026,
+        0.34222760796546936,
+        0.36284568905830383,
+        0.4810624122619629
+      ],
+      "s_hat_mean": 0.3675796613097191,
+      "s_hat_std": 0.0715864611255796
+    },
+    {
+      "stage": "head",
+      "routine": "smooth",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 4,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.6853102445602417,
+      "val_acc": 0.38700002431869507,
+      "s_curvature": [
+        11.393642425537108,
+        16.291427612304684,
+        2.7169704437255855,
+        7.55953788757324
+      ],
+      "s_curvature_mean": 9.490394592285154,
+      "s_curvature_std": 4.987080427579725,
+      "s_curvature_median": 9.476590156555174,
+      "s_hat": [
+        0.15781155228614807,
+        0.09391164034605026,
+        0.17519855499267578,
+        0.16604596376419067
+      ],
+      "s_hat_mean": 0.1482419278472662,
+      "s_hat_std": 0.03196482947652699
+    },
+    {
+      "stage": "head",
+      "routine": "baseline",
+      "metaparam": "per_example",
+      "h": 0.05,
+      "num_directions": 3,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.9603028297424316,
+      "val_acc": 0.41350001096725464,
+      "s_curvature": [
+        10.722351074218748,
+        16.363191604614254,
+        3.4654617309570304
+      ],
+      "s_curvature_mean": 10.183668136596678,
+      "s_curvature_std": 5.27923564252259,
+      "s_curvature_median": 10.722351074218748,
+      "s_hat": [
+        0.703046441078186,
+        0.6856778860092163,
+        0.7610786557197571
+      ],
+      "s_hat_mean": 0.7166009942690531,
+      "s_hat_std": 0.032239866132771446
+    },
+    {
+      "stage": "head",
+      "routine": "smooth",
+      "metaparam": "per_example",
+      "h": 0.05,
+      "num_directions": 3,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.6853102445602417,
+      "val_acc": 0.38700002431869507,
+      "s_curvature": [
+        5.260324478149413,
+        7.437753677368162,
+        5.632400512695312
+      ],
+      "s_curvature_mean": 6.110159556070962,
+      "s_curvature_std": 0.9509608323683345,
+      "s_curvature_median": 5.632400512695312,
+      "s_hat": [
+        0.17458578944206238,
+        -0.04819818213582039,
+        0.12265446782112122
+      ],
+      "s_hat_mean": 0.0830140250424544,
+      "s_hat_std": 0.09517246809790561
+    },
+    {
+      "stage": "head",
+      "routine": "smooth_wide",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 2,
+      "encoder_dim": 384,
+      "encoder_depth": 6,
+      "f0": 1.6620591878890991,
+      "val_acc": 0.4035000205039978,
+      "s_curvature": [
+        4.041385650634765,
+        19.335794448852536
+      ],
+      "s_curvature_mean": 11.68859004974365,
+      "s_curvature_std": 7.647204399108885,
+      "s_curvature_median": 11.68859004974365,
+      "s_hat": [
+        0.009209594689309597,
+        0.034894950687885284
+      ],
+      "s_hat_mean": 0.02205227268859744,
+      "s_hat_std": 0.012842677999287844
+    },
+    {
+      "stage": "menu",
+      "routine": "final/1",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 3,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.9603028297424316,
+      "val_acc": 0.41350001096725464,
+      "s_curvature": [
+        22.44629859924316,
+        11.200475692749022,
+        16.25852584838867
+      ],
+      "s_curvature_mean": 16.635100046793614,
+      "s_curvature_std": 4.59880341728406,
+      "s_curvature_median": 16.25852584838867,
+      "s_hat": [
+        0.28418293595314026,
+        0.34222760796546936,
+        0.36284568905830383
+      ],
+      "s_hat_mean": 0.32975207765897113,
+      "s_hat_std": 0.03330351656949805
+    },
+    {
+      "stage": "menu",
+      "routine": "final/3",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 3,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.7676514387130737,
+      "val_acc": 0.40450000762939453,
+      "s_curvature": [
+        26.211452484130856,
+        3.354120254516601,
+        0.7545471191406249
+      ],
+      "s_curvature_mean": 10.106706619262694,
+      "s_curvature_std": 11.43712011101085,
+      "s_curvature_median": 3.354120254516601,
+      "s_hat": [
+        0.22761215269565582,
+        0.2632521688938141,
+        0.30492180585861206
+      ],
+      "s_hat_mean": 0.26526204248269397,
+      "s_hat_std": 0.03159351528322023
+    },
+    {
+      "stage": "menu",
+      "routine": "final/10",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 3,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.6981353759765625,
+      "val_acc": 0.3830000162124634,
+      "s_curvature": [
+        5.559635162353515,
+        4.117393493652343,
+        10.348176956176756
+      ],
+      "s_curvature_mean": 6.675068537394204,
+      "s_curvature_std": 2.663182225563111,
+      "s_curvature_median": 5.559635162353515,
+      "s_hat": [
+        0.22442759573459625,
+        0.19866958260536194,
+        0.33445823192596436
+      ],
+      "s_hat_mean": 0.25251847008864087,
+      "s_hat_std": 0.05888668348367298
+    },
+    {
+      "stage": "menu",
+      "routine": "final/30",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 3,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.8630356788635254,
+      "val_acc": 0.3360000252723694,
+      "s_curvature": [
+        6.138134002685546,
+        6.437540054321288,
+        2.3295879364013667
+      ],
+      "s_curvature_mean": 4.9684206644694004,
+      "s_curvature_std": 1.8699357602123237,
+      "s_curvature_median": 6.138134002685546,
+      "s_hat": [
+        0.283630907535553,
+        0.29151591658592224,
+        0.2859533429145813
+      ],
+      "s_hat_mean": 0.28703338901201886,
+      "s_hat_std": 0.003308395039949516
+    },
+    {
+      "stage": "menu",
+      "routine": "post_norm",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 3,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.9361399412155151,
+      "val_acc": 0.41450002789497375,
+      "s_curvature": [
+        42.48595237731933,
+        26.431226730346676,
+        3.794717788696288
+      ],
+      "s_curvature_mean": 24.237298965454098,
+      "s_curvature_std": 15.871628729195583,
+      "s_curvature_median": 26.431226730346676,
+      "s_hat": [
+        0.15423786640167236,
+        0.12014579027891159,
+        0.2765195667743683
+      ],
+      "s_hat_mean": 0.1836344078183174,
+      "s_hat_std": 0.06713820064765988
+    },
+    {
+      "stage": "menu",
+      "routine": "cls_pool",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 3,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 2.1545088291168213,
+      "val_acc": 0.39650002121925354,
+      "s_curvature": [
+        4.0343284606933585,
+        9.592437744140623,
+        44.484233856201165
+      ],
+      "s_curvature_mean": 19.37033335367838,
+      "s_curvature_std": 17.902590939854605,
+      "s_curvature_median": 9.592437744140623,
+      "s_hat": [
+        0.25391528010368347,
+        0.26665547490119934,
+        0.3339056968688965
+      ],
+      "s_hat_mean": 0.28482548395792645,
+      "s_hat_std": 0.035092531165565474
+    },
+    {
+      "stage": "menu",
+      "routine": "relu",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 3,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.8957918882369995,
+      "val_acc": 0.4075000286102295,
+      "s_curvature": [
+        11.95235252380371,
+        50.896120071411126,
+        1.8970966339111324
+      ],
+      "s_curvature_mean": 21.581856409708653,
+      "s_curvature_std": 21.130887081452784,
+      "s_curvature_median": 11.95235252380371,
+      "s_hat": [
+        0.2340797781944275,
+        0.1694519817829132,
+        0.006992064416408539
+      ],
+      "s_hat_mean": 0.1368412747979164,
+      "s_hat_std": 0.09553289518896219
+    },
+    {
+      "stage": "menu",
+      "routine": "width_x2",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 2,
+      "encoder_dim": 384,
+      "encoder_depth": 6,
+      "f0": 2.1982369422912598,
+      "val_acc": 0.4065000116825104,
+      "s_curvature": [
+        21.394062042236325,
+        17.966556549072262
+      ],
+      "s_curvature_mean": 19.680309295654293,
+      "s_curvature_std": 1.7137527465820312,
+      "s_curvature_median": 19.680309295654293,
+      "s_hat": [
+        0.15546880662441254,
+        0.1150597482919693
+      ],
+      "s_hat_mean": 0.13526427745819092,
+      "s_hat_std": 0.02020452916622162
+    },
+    {
+      "stage": "menu",
+      "routine": "depth_x2",
+      "metaparam": "per_cluster",
+      "h": 0.05,
+      "num_directions": 2,
+      "encoder_dim": 192,
+      "encoder_depth": 12,
+      "f0": 1.8545200824737549,
+      "val_acc": 0.4345000088214874,
+      "s_curvature": [
+        3.7413597106933585,
+        10.304355621337889
+      ],
+      "s_curvature_mean": 7.022857666015623,
+      "s_curvature_std": 3.281497955322265,
+      "s_curvature_median": 7.022857666015623,
+      "s_hat": [
+        0.35036712884902954,
+        0.22368194162845612
+      ],
+      "s_hat_mean": 0.28702453523874283,
+      "s_hat_std": 0.06334259361028671
+    },
+    {
+      "stage": "per_example_h",
+      "routine": "smooth",
+      "metaparam": "per_example",
+      "h": 0.1,
+      "num_directions": 3,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.6853102445602417,
+      "val_acc": 0.38700002431869507,
+      "s_curvature": [
+        2.2348284721374507,
+        0.8828043937683103,
+        1.6596436500549314
+      ],
+      "s_curvature_mean": 1.5924255053202307,
+      "s_curvature_std": 0.5540042035692884,
+      "s_curvature_median": 1.6596436500549314,
+      "s_hat": [
+        0.06700395047664642,
+        0.16887728869915009,
+        0.18811577558517456
+      ],
+      "s_hat_mean": 0.141332338253657,
+      "s_hat_std": 0.05314170845681183
+    },
+    {
+      "stage": "per_example_h",
+      "routine": "smooth",
+      "metaparam": "per_example",
+      "h": 0.2,
+      "num_directions": 3,
+      "encoder_dim": 192,
+      "encoder_depth": 6,
+      "f0": 1.6853102445602417,
+      "val_acc": 0.38700002431869507,
+      "s_curvature": [
+        0.03867149353027343,
+        0.31053423881530756,
+        0.39529204368591303
+      ],
+      "s_curvature_mean": 0.24816592534383133,
+      "s_curvature_std": 0.15212255824890009,
+      "s_curvature_median": 0.31053423881530756,
+      "s_hat": [
+        0.146834135055542,
+        0.04204563796520233,
+        0.11931499093770981
+      ],
+      "s_hat_mean": 0.10273158798615138,
+      "s_hat_std": 0.044357744312226915
+    }
+  ]
+}

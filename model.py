@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import Literal
 
 import torch
 from torch import Tensor, nn
@@ -19,6 +20,13 @@ class ViTConfig:
     encoder_heads: int = 4
     mlp_ratio: float = 4.0
     num_classes: int = 10
+    # Metasmoothness "menu" levers (the ViT analogue of metasmooth.Routine).
+    # Defaults reproduce the original behavior exactly (mean pool, pre-norm,
+    # GELU, unscaled logits), so existing callers/tests are unchanged.
+    pre_norm: bool = True
+    pool: Literal["mean", "cls"] = "mean"
+    smooth_activation: bool = True
+    final_logit_scale: float = 1.0
 
     def __post_init__(self) -> None:
         if self.image_size <= 0 or self.patch_size <= 0:
@@ -37,6 +45,10 @@ class ViTConfig:
             raise ValueError("mlp_ratio must be positive")
         if self.num_classes <= 1:
             raise ValueError("num_classes must be at least 2")
+        if self.pool not in ("mean", "cls"):
+            raise ValueError("pool must be 'mean' or 'cls'")
+        if self.final_logit_scale <= 0:
+            raise ValueError("final_logit_scale must be positive")
 
     @property
     def grid_size(self) -> int:
@@ -115,21 +127,37 @@ class MathSelfAttention(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    def __init__(self, dim: int, num_heads: int, mlp_ratio: float) -> None:
+    def __init__(
+        self,
+        dim: int,
+        num_heads: int,
+        mlp_ratio: float,
+        *,
+        pre_norm: bool = True,
+        smooth_activation: bool = True,
+    ) -> None:
         super().__init__()
         hidden_dim = int(dim * mlp_ratio)
+        activation: nn.Module = nn.GELU() if smooth_activation else nn.ReLU()
         self.attention_norm = nn.LayerNorm(dim)
         self.attention = MathSelfAttention(dim, num_heads)
         self.mlp_norm = nn.LayerNorm(dim)
         self.mlp = nn.Sequential(
             nn.Linear(dim, hidden_dim),
-            nn.GELU(),
+            activation,
             nn.Linear(hidden_dim, dim),
         )
+        self.pre_norm = pre_norm
 
     def forward(self, inputs: Tensor) -> Tensor:
-        inputs = inputs + self.attention(self.attention_norm(inputs))
-        return inputs + self.mlp(self.mlp_norm(inputs))
+        if self.pre_norm:
+            inputs = inputs + self.attention(self.attention_norm(inputs))
+            return inputs + self.mlp(self.mlp_norm(inputs))
+
+        # Post-norm: normalize the residual sum.  The worktree's ViT
+        # metasmoothness probes favored this for cleaner metagradients.
+        inputs = self.attention_norm(inputs + self.attention(inputs))
+        return self.mlp_norm(inputs + self.mlp(inputs))
 
 
 class VisionTransformerClassifier(nn.Module):
@@ -138,11 +166,18 @@ class VisionTransformerClassifier(nn.Module):
         self.config = config or ViTConfig()
 
         self.patch_embedding = nn.Linear(self.config.patch_dim, self.config.encoder_dim)
+        self.cls_token = (
+            nn.Parameter(torch.zeros(1, 1, self.config.encoder_dim))
+            if self.config.pool == "cls"
+            else None
+        )
         self.encoder_blocks = nn.ModuleList(
             TransformerBlock(
                 self.config.encoder_dim,
                 self.config.encoder_heads,
                 self.config.mlp_ratio,
+                pre_norm=self.config.pre_norm,
+                smooth_activation=self.config.smooth_activation,
             )
             for _ in range(self.config.encoder_depth)
         )
@@ -160,13 +195,20 @@ class VisionTransformerClassifier(nn.Module):
             dtype=images.dtype,
         )
         encoded = self.patch_embedding(patches) + positions.unsqueeze(0)
+        if self.cls_token is not None:
+            cls_token = self.cls_token.expand(images.shape[0], -1, -1).to(encoded.dtype)
+            encoded = torch.cat((cls_token, encoded), dim=1)
         for block in self.encoder_blocks:
             encoded = block(encoded)
         encoded = self.encoder_norm(encoded)
-        # Mean-pool over patch tokens (average pooling is the paper's smoothness-friendly
-        # choice) and project to class logits.
-        pooled = encoded.mean(dim=1)
-        return self.head(pooled)
+        # Pool over tokens: mean (the paper's smoothness-friendly average pooling)
+        # or the CLS token (the standard ViT default), then project to logits and
+        # optionally scale them down (the paper's dominant smoothness lever).
+        if self.config.pool == "mean":
+            pooled = encoded.mean(dim=1)
+        else:
+            pooled = encoded[:, 0]
+        return self.head(pooled) / self.config.final_logit_scale
 
     def _validate_inputs(self, images: Tensor) -> None:
         expected_image_shape = (

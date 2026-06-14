@@ -25,6 +25,19 @@ class SmoothAdamWConfig:
 
 
 @dataclass(frozen=True)
+class SmoothSGDConfig:
+    """Configuration for differentiable momentum SGD."""
+
+    learning_rate: float = 1e-2
+    momentum: float = 0.9
+    weight_decay: float = 0.0
+    nesterov: bool = True
+
+
+InnerOptimizerConfig = SmoothAdamWConfig | SmoothSGDConfig
+
+
+@dataclass(frozen=True)
 class TrainState:
     parameters: TensorMap
     buffers: TensorMap
@@ -91,6 +104,34 @@ def functional_smooth_adamw(
     )
 
 
+def functional_smooth_sgd(
+    state: TrainState,
+    gradients: Mapping[str, Tensor],
+    config: SmoothSGDConfig,
+) -> TrainState:
+    if not 0.0 <= config.momentum < 1.0:
+        raise ValueError("momentum must be in [0, 1)")
+    if config.weight_decay < 0.0:
+        raise ValueError("weight_decay must be non-negative")
+
+    next_parameters: TensorMap = {}
+    next_first_moments: TensorMap = {}
+    for name, parameter in state.parameters.items():
+        gradient = gradients[name] + config.weight_decay * parameter
+        velocity = config.momentum * state.first_moments[name] + gradient
+        update = gradient + config.momentum * velocity if config.nesterov else velocity
+        next_parameters[name] = parameter - config.learning_rate * update
+        next_first_moments[name] = velocity
+
+    return TrainState(
+        parameters=next_parameters,
+        buffers=state.buffers,
+        first_moments=next_first_moments,
+        second_moments=state.second_moments,
+        step=state.step + 1,
+    )
+
+
 def weighted_inner_step(
     model: nn.Module,
     state: TrainState,
@@ -99,7 +140,7 @@ def weighted_inner_step(
     group_ids: Tensor,
     logits: Tensor,
     base_group_masses: Tensor,
-    optimizer_config: SmoothAdamWConfig,
+    optimizer_config: InnerOptimizerConfig,
     temperature: float = 1.0,
     create_graph: bool = True,
 ) -> tuple[TrainState, Tensor]:
@@ -116,7 +157,9 @@ def weighted_inner_step(
         tuple(state.parameters.values()),
         create_graph=create_graph,
     )
-    next_state = functional_smooth_adamw(
-        state, dict(zip(parameter_names, gradients, strict=True)), optimizer_config
-    )
+    gradient_map = dict(zip(parameter_names, gradients, strict=True))
+    if isinstance(optimizer_config, SmoothSGDConfig):
+        next_state = functional_smooth_sgd(state, gradient_map, optimizer_config)
+    else:
+        next_state = functional_smooth_adamw(state, gradient_map, optimizer_config)
     return next_state, loss
