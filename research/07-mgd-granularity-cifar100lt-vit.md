@@ -130,21 +130,21 @@ MGD search summary (balanced meta-validation CE; 15 search-epochs × 15 meta-ste
 
 ## Reproduction
 
-Code (main checkout): `_run_cifar100_lt_vit_mgd.py` (`--phase {baseline,search,reeval,all}`),
-`_cluster_basis.py` (label-agnostic hierarchical k-means), `_render_cifar100_lt_vit_mgd.py`,
+Code (main checkout): `experiments/cifar100_lt/vit_mgd.py` (`--phase {baseline,search,reeval,all}`),
+`experiments/cifar100_lt/cluster_basis.py` (label-agnostic hierarchical k-means), `experiments/cifar100_lt/render_vit_mgd.py`,
 `tests/test_cifar100_lt_vit_mgd.py`. Reuses the scale-sweep recipe
-(`_run_cifar100_lt_vit_scale_sweep.py`) and the engine (`recursive_replay.py`,
+(`experiments/cifar100_lt/vit_scale_sweep.py`) and the engine (`recursive_replay.py`,
 `functional_train.py`, `weighting.py`, `determinism.py`).
 
 ```bash
 # baseline + embeddings, then search all granularities, then full-recipe reeval
-python _run_cifar100_lt_vit_mgd.py --phase baseline --epochs 75
-python _run_cifar100_lt_vit_mgd.py --phase search \
+python -m experiments.cifar100_lt.vit_mgd --phase baseline --epochs 75
+python -m experiments.cifar100_lt.vit_mgd --phase search \
   --granularities per_class,per_cluster,per_example \
   --search-epochs 15 --meta-steps 15 --num-clusters 128 --branching-factor 32
-python _run_cifar100_lt_vit_mgd.py --phase reeval \
+python -m experiments.cifar100_lt.vit_mgd --phase reeval \
   --granularities per_class,per_cluster,per_example --epochs 75
-python _render_cifar100_lt_vit_mgd.py   # the 4-way table
+python -m experiments.cifar100_lt.render_vit_mgd   # the 4-way table
 ```
 
 Artifacts: `artifacts/cifar100_lt_vit_mgd/{baseline,search_<g>,reeval_<g>}.json`.
@@ -153,4 +153,4 @@ Artifacts: `artifacts/cifar100_lt_vit_mgd/{baseline,search_<g>,reeval_<g>}.json`
 
 - `artifacts/cifar100_lt_vit_mgd/baseline.json`, `reeval_{per_class,per_cluster,per_example}.json`, `search_{per_class,per_cluster,per_example}.json`
 - `CIFAR100_LT_VIT_SCALE_STUDY.md` (backbone/recipe selection; verbatim in [archive/original-handoffs.md](archive/original-handoffs.md))
-- `_run_cifar100_lt_vit_mgd.py`, `_cluster_basis.py`, `_render_cifar100_lt_vit_mgd.py`
+- `experiments/cifar100_lt/vit_mgd.py`, `experiments/cifar100_lt/cluster_basis.py`, `experiments/cifar100_lt/render_vit_mgd.py`

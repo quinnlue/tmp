@@ -135,14 +135,14 @@ Winning config: `METHOD=replay N_POOL=4000 N_OBJ=3000 N_VAL=3000 INNER_EPOCHS=12
 
 ```bash
 # from the repo root, in the torch311 env (laptop benchmark):
-C:/Users/luequ/micromamba/envs/torch311/python.exe _run_metasmooth_benchmark.py   # writes artifacts/metasmooth_results.json
-C:/Users/luequ/micromamba/envs/torch311/python.exe _render_results.py             # writes artifacts/metasmooth_results.png + tables
+C:/Users/luequ/micromamba/envs/torch311/python.exe -m experiments.cifar10.metasmooth_benchmark   # writes artifacts/metasmooth_results.json
+C:/Users/luequ/micromamba/envs/torch311/python.exe -m experiments.cifar10.render_metasmooth      # writes artifacts/metasmooth_results.png + tables
 C:/Users/luequ/micromamba/envs/torch311/python.exe -m pytest tests/test_metasmooth.py -q   # 10 passed
 ```
 
-VM scaling: raise `N_TRAIN`, `TRAIN.epochs`, `HEAD_DIRS`/`ABL_DIRS`/`PE_DIRS`/`WIDE_DIRS` etc. in `_run_metasmooth_vm.py` (env-var driven); keep `amp="off"`. Render with `python _render_vm.py artifacts/metasmooth_vm_deep_results.json`. CIFAR data on the VM must come from an HF-parquet `.npz` cache (`_build_cifar_cache.py`) — the torchvision mirror is throttled to ~30 KB/s.
+VM scaling: raise `N_TRAIN`, `TRAIN.epochs`, `HEAD_DIRS`/`ABL_DIRS`/`PE_DIRS`/`WIDE_DIRS` etc. in `experiments/cifar10/metasmooth_vm.py` (env-var driven); keep `amp="off"`. Render with `python -m experiments.cifar10.render_metasmooth_vm artifacts/metasmooth_vm_deep_results.json`. CIFAR data on the VM must come from an HF-parquet `.npz` cache (`python -m tools.build_cifar_cache`) — the torchvision mirror is throttled to ~30 KB/s.
 
-Phase B: `_train_smooth_vm.py` (routine, lr) grid over real augmented training. Phase C: `_phase_c_mgd_vm.py` with env vars `METHOD=replay|store_all N_POOL N_OBJ N_VAL INNER_EPOCHS BATCH INNER_LR META_STEPS META_LR BRANCHING`, plus `CORRUPT_CLASSES/CORRUPT_FRAC` (label-noise demo) and `TARGET_CLASSES` (distribution-shift demo); `_phase_c_smoke.py` is a CPU/laptop check that the engine differentiates held-out CE w.r.t. per-cluster logits (no CIFAR needed).
+Phase B: `experiments/cifar10/metasmooth_train.py` (routine, lr) grid over real augmented training. Phase C: `experiments/cifar10/metasmooth_mgd.py` with env vars `METHOD=replay|store_all N_POOL N_OBJ N_VAL INNER_EPOCHS BATCH INNER_LR META_STEPS META_LR BRANCHING`, plus `CORRUPT_CLASSES/CORRUPT_FRAC` (label-noise demo) and `TARGET_CLASSES` (distribution-shift demo); `experiments/cifar10/metasmooth_smoke.py` is a CPU/laptop check that the engine differentiates held-out CE w.r.t. per-cluster logits (no CIFAR needed).
 
 Artifacts on the laptop (under `artifacts/`): `metasmooth_vm_results.json`, `metasmooth_vm_deep_results.json`, `metasmooth_vm_ranking_deep.png`, `metasmooth_vm_tradeoff_deep.png`, `train_smooth_vm_results.json`, `phase_c_balanced_results.json`, `phase_c_corrupt_results.json`, `phase_c_shift_results.json`.
 

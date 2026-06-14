@@ -9,7 +9,7 @@ from typing import Any, Sequence
 import torch
 
 from clustering import hierarchical_kmeans_cluster_basis, save_cluster_basis_artifacts
-from experiments.build_imagenet_lt_clusters import (
+from experiments.imagenet_lt.build_clusters import (
     apply_subset,
     load_completed_embedding_artifact,
     load_subset_indices,

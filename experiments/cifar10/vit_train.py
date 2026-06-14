@@ -5,7 +5,7 @@ Phase A measured metasmoothness under fp32-deterministic, un-augmented training
 ViT the *smooth* routine (post-norm + logits/10, optionally wider), what does it
 cost in **test accuracy** under normal augmented training?
 
-This mirrors `_train_smooth_vm.py` (the ResNet-9 Phase B) but for the ViT menu:
+This mirrors `experiments.cifar10.metasmooth_train` (the ResNet-9 Phase B) but for the ViT menu:
 real RandomCrop+flip augmentation, AMP, AdamW, cosine+warmup, and a learning-rate
 sweep -- the /10 logit scaling rescales the loss gradient, so the smooth routine
 wants a larger LR (the key ResNet-9 finding to re-confirm).  Reports best val +
@@ -25,7 +25,7 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 
-from _vit_menu import BASELINE_VIT, SMOOTH_VIT, SMOOTH_WIDE_VIT, ViTGeometry
+from experiments.cifar10.vit_menu import BASELINE_VIT, SMOOTH_VIT, SMOOTH_WIDE_VIT, ViTGeometry
 from model import VisionTransformerClassifier
 
 DATA_DIR = os.environ.get("CIFAR_DIR", "./data")

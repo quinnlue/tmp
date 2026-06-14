@@ -7,7 +7,7 @@ smoothness-vs-accuracy scatter (the paper's Fig-4-style tradeoff).
 Phase B (`vit_train_results.json`, if present as argv[2] or auto-found): a
 best-test-accuracy-per-routine table.
 
-Usage: python _render_vit_results.py [phaseA.json] [phaseB.json]
+Usage: python -m experiments.cifar10.render_vit [phaseA.json] [phaseB.json]
 """
 from __future__ import annotations
 

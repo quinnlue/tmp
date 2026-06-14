@@ -5,7 +5,6 @@ import argparse
 import json
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -170,6 +169,8 @@ def markdown_report(summary: dict) -> str:
 
 
 def plot_summary(raw_runs: dict, summary: dict, output: Path) -> None:
+    import matplotlib.pyplot as plt
+
     labels = [label for _, label in RUNS]
     keys = [label.replace("\n", " / ") for label in labels]
     methods = ("uniform", "per_class", "per_example", "oracle")

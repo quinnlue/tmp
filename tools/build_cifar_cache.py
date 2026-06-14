@@ -8,7 +8,7 @@ the `uoft-cs/cifar10` parquet into the uint8 [N,32,32,3] arrays that
 Pixels are identical to torchvision's (PNG is lossless); only the example
 *order* may differ, which is irrelevant — the subset is drawn by a fixed seed.
 
-Usage: python _build_cifar_cache.py <data_dir>
+Usage: python -m tools.build_cifar_cache <data_dir>
 """
 from __future__ import annotations
 

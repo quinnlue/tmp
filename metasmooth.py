@@ -320,7 +320,7 @@ def load_cifar_subset(
     If ``{data_dir}/cifar10_train.npz`` exists (keys ``images`` uint8
     ``[N, 32, 32, 3]`` and ``labels`` ``[N]``) it is used directly; this lets
     environments where the torchvision mirror is throttled prebuild the cache
-    (see ``_build_cifar_cache.py``).  Otherwise torchvision downloads CIFAR-10.
+    (see ``python -m tools.build_cifar_cache``). Otherwise torchvision downloads CIFAR-10.
     """
     cache = os.path.join(data_dir, "cifar10_train.npz")
     if os.path.exists(cache):

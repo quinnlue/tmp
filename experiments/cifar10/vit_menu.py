@@ -1,7 +1,7 @@
 """The ViT metasmoothness "menu" -- the transformer analogue of
 `metasmooth.Routine`.  Shared by the Phase-A diagnostic runner
-(`_run_vit_metasmooth_local.py`) and the Phase-B accuracy runner
-(`_run_vit_smooth_train_local.py`) so the routine definitions stay in one place.
+(`experiments.cifar10.vit_metasmooth`) and the Phase-B accuracy runner
+(`experiments.cifar10.vit_train`) so the routine definitions stay in one place.
 """
 from __future__ import annotations
 

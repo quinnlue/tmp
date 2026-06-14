@@ -14,7 +14,7 @@ from clustering import (
     build_fixed_intermediate_cluster_basis,
     save_cluster_basis_artifacts,
 )
-from experiments.extract_imagenet_lt_embeddings import load_existing_artifact
+from experiments.imagenet_lt.extract_embeddings import load_existing_artifact
 
 
 @dataclass(frozen=True)

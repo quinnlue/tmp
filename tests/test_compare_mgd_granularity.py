@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import numpy as np
 import torch
 
-from experiments.compare_mgd_granularity import (
+from experiments.cifar10.compare_mgd_granularity import (
     DEFAULT_TARGET,
     Split,
     apply_meta_update,

@@ -32,7 +32,7 @@ are present.
 
 ## Data caches
 
-- **CIFAR-10:** `python _build_cifar_cache.py ./data` → `data/cifar10_{train,test}.npz`
+- **CIFAR-10:** `python -m tools.build_cifar_cache ./data` → `data/cifar10_{train,test}.npz`
   (pulls the HuggingFace parquet mirror; `load_cifar_subset` fast-paths the npz).
   The torchvision mirror (cs.toronto.edu) is throttled to ~30 KB/s on the VMs —
   do **not** let torchvision download.
@@ -45,22 +45,22 @@ are present.
 
 ## Run commands by experiment
 
-- **Metasmoothness, ResNet-9** ([02](02-metasmoothness-resnet9.md)): `_run_metasmooth_vm.py`
-  (Phase A, env-var config), `_train_smooth_vm.py` (Phase B), `_phase_c_mgd_vm.py`
+- **Metasmoothness, ResNet-9** ([02](02-metasmoothness-resnet9.md)): `experiments.cifar10.metasmooth_vm`
+  (Phase A, env-var config), `experiments.cifar10.metasmooth_train` (Phase B), `experiments.cifar10.metasmooth_mgd`
   (Phase C per-cluster MGD; env `METHOD/N_POOL/N_OBJ/INNER_EPOCHS/META_STEPS/TARGET_CLASSES/…`),
-  render with `_render_vm.py`.
-- **Metasmoothness, ViT** ([03](03-metasmoothness-vit.md)): `_run_vit_metasmooth_local.py`
-  (Phase A), `_run_vit_smooth_train_local.py` (Phase B), `_run_vit_per_example_local.py`,
-  render with `_render_vit_results.py`. Menu in `_vit_menu.py`.
+  render with `experiments.cifar10.render_metasmooth_vm`.
+- **Metasmoothness, ViT** ([03](03-metasmoothness-vit.md)): `experiments.cifar10.vit_metasmooth`
+  (Phase A), `experiments.cifar10.vit_train` (Phase B), `experiments.cifar10.vit_per_example`,
+  render with `experiments.cifar10.render_vit`. Menu in `experiments.cifar10.vit_menu`.
 - **CIFAR100-LT scale study** ([04](04-cifar100lt-vit-scale-study.md)):
-  `_run_cifar100_lt_vit_scale_sweep.py`.
+  `experiments.cifar100_lt.vit_scale_sweep`.
 - **CIFAR-10 granularity** ([05](05-mgd-granularity-cifar10.md)):
-  `python -m experiments.compare_mgd_granularity …` + `experiments.summarize_mgd_granularity`.
+  `python -m experiments.cifar10.compare_mgd_granularity …` + `experiments.cifar10.summarize_mgd_granularity`.
 - **ImageNet-LT granularity** ([06](06-mgd-granularity-imagenetlt.md)):
-  `python -m experiments.compare_imagenet_lt_mgd …` + `experiments.summarize_imagenet_lt_mgd`;
-  feature/cluster prep via `extract_imagenet_lt_embeddings.py` / `build_imagenet_lt_hkmeans.py`.
+  `python -m experiments.imagenet_lt.compare_mgd …` + `experiments.imagenet_lt.summarize_mgd`;
+  feature/cluster prep via `experiments.imagenet_lt.extract_embeddings` / `experiments.imagenet_lt.build_hkmeans`.
 - **CIFAR100-LT ViT granularity** ([07](07-mgd-granularity-cifar100lt-vit.md)):
-  `_run_cifar100_lt_vit_mgd.py --phase {baseline,search,reeval,all}` + `_render_cifar100_lt_vit_mgd.py`.
+  `experiments.cifar100_lt.vit_mgd --phase {baseline,search,reeval,all}` + `experiments.cifar100_lt.render_vit_mgd`.
 
 ## Engineering gotchas (don't relearn these)
 

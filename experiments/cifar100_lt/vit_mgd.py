@@ -46,9 +46,9 @@ from torch import Tensor
 from torch.func import functional_call
 from torch.nn import functional as F
 
-from _cifar100_lt import CIFAR100LTData, load_cifar100_lt
-from _cluster_basis import hierarchical_kmeans_cluster_basis
-from _run_cifar100_lt_vit_scale_sweep import (
+from experiments.cifar100_lt.cluster_basis import hierarchical_kmeans_cluster_basis
+from experiments.cifar100_lt.data import CIFAR100LTData, load_cifar100_lt
+from experiments.cifar100_lt.vit_scale_sweep import (
     PROFILES,
     augment,
     build_model,

@@ -31,7 +31,7 @@ pre- vs post-norm, mean vs CLS pooling, GELU vs ReLU, width, depth.
 - Environment: `C:/Users/luequ/micromamba/envs/torch311/python.exe` — torch
   2.8.0+cu128, torchvision 0.23.0+cu128, CUDA on an **RTX 4050 Laptop GPU**.
 - Data: CIFAR-10 npz cache at `./data/cifar10_{train,test}.npz` (build with
-  `python _build_cifar_cache.py ./data`).
+  `python -m tools.build_cifar_cache ./data`).
 - Diagnostics: Definition 1 (curvature) `S = |f(z+2hv) - 2f(z+hv) + f(z)| / h^2`
   (**lower = smoother**); Definition 2 (empirical metasmoothness)
   `Ŝ = sign(Δ_A(z;v))^T diag(d/‖d‖₁) sign(Δ_A(z+hv;v)) ∈ [-1,1]` (**higher =
@@ -39,7 +39,7 @@ pre- vs post-norm, mean vs CLS pooling, GELU vs ReLU, width, depth.
 
 ## Method
 
-### The ViT "menu" (`ViTRoutine`, `_vit_menu.py`)
+### The ViT "menu" (`ViTRoutine`, `experiments/cifar10/vit_menu.py`)
 
 A frozen dataclass `ViTRoutine`, the transformer analogue of
 `metasmooth.Routine`:
@@ -73,7 +73,7 @@ original behavior exactly, so `tests/test_model.py` is unchanged. Sinusoidal
 2-D positions + MATH-backend SDPA attention (deterministic) were already
 present.
 
-**Corrected `SMOOTH_VIT`** (post-sweep, in `_vit_menu.py`):
+**Corrected `SMOOTH_VIT`** (post-sweep, in `experiments/cifar10/vit_menu.py`):
 `ViTRoutine(name="smooth", pre_norm=True, final_scale=10.0)` — mean pooling,
 **pre-norm**, GELU, logits/10. Post-norm increased curvature and is omitted.
 `SMOOTH_WIDE_VIT` = smooth + `width_mult=2.0`.
@@ -83,10 +83,10 @@ present.
 | file | what |
 |---|---|
 | `model.py` | edited: ViT smooth-menu fields + CLS token + post-norm path (backward-compatible defaults). |
-| `_vit_menu.py` | `ViTRoutine` / `ViTGeometry` menu + `BASELINE_VIT` / `SMOOTH_VIT` / `SMOOTH_WIDE_VIT`. Shared by both runners. |
-| `_run_vit_metasmooth_local.py` | Phase A: CIFAR-10 ViT metasmoothness. `A(z)` = deterministic weighted training via functional smooth AdamW; drives `ms.measure_direction`. Stages: head-to-head, per-cluster menu search, per-example h-sweep. |
-| `_run_vit_smooth_train_local.py` | Phase B: augmented AdamW training + LR sweep; best test/val accuracy per (routine, lr). |
-| `_render_vit_results.py` | JSON → markdown tables (ranked by `Ŝ`) + PNG renderings. |
+| `experiments/cifar10/vit_menu.py` | `ViTRoutine` / `ViTGeometry` menu + `BASELINE_VIT` / `SMOOTH_VIT` / `SMOOTH_WIDE_VIT`. Shared by both runners. |
+| `experiments/cifar10/vit_metasmooth.py` | Phase A: CIFAR-10 ViT metasmoothness. `A(z)` = deterministic weighted training via functional smooth AdamW; drives `ms.measure_direction`. Stages: head-to-head, per-cluster menu search, per-example h-sweep. |
+| `experiments/cifar10/vit_train.py` | Phase B: augmented AdamW training + LR sweep; best test/val accuracy per (routine, lr). |
+| `experiments/cifar10/render_vit.py` | JSON → markdown tables (ranked by `Ŝ`) + PNG renderings. |
 | `tests/test_vit_metasmooth.py` | 6 CPU tests: training determinism, menu construction (CLS + post-norm paths), `final_scale` divides logits, estimator end-to-end on a toy ViT. |
 
 Tests: `…/torch311/python.exe -m pytest tests/test_vit_metasmooth.py
@@ -148,7 +148,7 @@ exactly the ResNet-9 pattern — use per-example `S`, not `Ŝ`.
 | smooth | 0.6481 | 1e-3 | higher LR *hurts* (0.59 @ 3e-3, collapses @ 6e-3) |
 | smooth_wide | 0.10 (chance) | — | collapsed at every tested LR (only ≥3e-3 swept) |
 
-### Per-example (`_run_vit_per_example_local.py`)
+### Per-example (`experiments/cifar10/vit_per_example.py`)
 
 Per-example (one weight per training image, dim = n_train) is the real
 curation target. Probed across the menu (3 dirs, h=0.05) plus an h-sweep:
@@ -208,7 +208,7 @@ curation target. Probed across the menu (3 dirs, h=0.05) plus an h-sweep:
 ## Actionable correction
 
 Redefine `SMOOTH_VIT` as **mean + pre-norm + GELU + final_scale=10** (drop
-post-norm; the `final/10` sweet spot), as now reflected in `_vit_menu.py`.
+post-norm; the `final/10` sweet spot), as now reflected in `experiments/cifar10/vit_menu.py`.
 This architecture correction (mean pooling, pre-norm, GELU,
 `final_scale=10`) fed directly into the CIFAR100-LT compute-scale study — see
 [04-cifar100lt-vit-scale-study.md](04-cifar100lt-vit-scale-study.md).
@@ -223,28 +223,28 @@ optimizer-dependent.
 
 ```powershell
 # one-time: build the CIFAR-10 cache
-C:/Users/luequ/micromamba/envs/torch311/python.exe _build_cifar_cache.py ./data
+C:/Users/luequ/micromamba/envs/torch311/python.exe -m tools.build_cifar_cache ./data
 
 # Phase A — metasmoothness ranking
-C:/Users/luequ/micromamba/envs/torch311/python.exe _run_vit_metasmooth_local.py
+C:/Users/luequ/micromamba/envs/torch311/python.exe -m experiments.cifar10.vit_metasmooth
 #   defaults: N_TRAIN=4000 N_VAL=2000 EPOCHS=20 BATCH=500
 #             DIM=192 DEPTH=6 HEADS=6 PATCH=8 MLP_RATIO=2.0
 #             H=0.05 HEAD_DIRS=4 PE_DIRS=3 ABL_DIRS=3 MAX_MINUTES=360
 #   -> artifacts/vit_metasmooth_results.json   (written after every bench)
 
 # Phase B — does the smooth menu cost accuracy?
-C:/Users/luequ/micromamba/envs/torch311/python.exe _run_vit_smooth_train_local.py
+C:/Users/luequ/micromamba/envs/torch311/python.exe -m experiments.cifar10.vit_train
 #   defaults: N_TRAIN=20000 N_VAL=5000 EPOCHS=30 ... MAX_MINUTES=240
 #   -> artifacts/vit_train_results.json
 
 # render tables + PNGs
-C:/Users/luequ/micromamba/envs/torch311/python.exe _render_vit_results.py
+C:/Users/luequ/micromamba/envs/torch311/python.exe -m experiments.cifar10.render_vit
 ```
 
 Override any knob via env vars (PowerShell: `$env:EPOCHS=15; python ...`).
 
 Smoke test (~10 s, proves the pipeline + ordering):
-`N_TRAIN=400 N_VAL=200 EPOCHS=2 DIM=48 DEPTH=2 HEADS=4 HEAD_DIRS=1 PE_DIRS=1 ABL_DIRS=1 WIDE_DIRS=1 OUT=smoke.json python _run_vit_metasmooth_local.py`.
+`N_TRAIN=400 N_VAL=200 EPOCHS=2 DIM=48 DEPTH=2 HEADS=4 HEAD_DIRS=1 PE_DIRS=1 ABL_DIRS=1 WIDE_DIRS=1 OUT=smoke.json python -m experiments.cifar10.vit_metasmooth`.
 
 ## Gotchas
 
@@ -259,5 +259,5 @@ Smoke test (~10 s, proves the pipeline + ordering):
 ## Source documents
 
 - `HANDOFF_vit_metasmoothness.md` (verbatim in [archive/original-handoffs.md](archive/original-handoffs.md))
-- `_vit_menu.py`
+- `experiments/cifar10/vit_menu.py`
 - `model.py`

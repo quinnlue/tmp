@@ -14,8 +14,8 @@ import torch
 from torch import Tensor
 from torch.nn import functional as F
 
-from _cifar100_lt import CIFAR100LTData, load_cifar100_lt
-from _vit_menu import SMOOTH_VIT, ViTGeometry
+from experiments.cifar10.vit_menu import SMOOTH_VIT, ViTGeometry
+from experiments.cifar100_lt.data import CIFAR100LTData, load_cifar100_lt
 from model import VisionTransformerClassifier
 
 CIFAR100_MEAN = (0.5071, 0.4867, 0.4408)

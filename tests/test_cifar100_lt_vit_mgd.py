@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import torch
 
-import _run_cifar100_lt_vit_mgd as mgd
-from _cluster_basis import hierarchical_kmeans_cluster_basis
+from experiments.cifar100_lt import vit_mgd as mgd
+from experiments.cifar100_lt.cluster_basis import hierarchical_kmeans_cluster_basis
 from model import ViTConfig, VisionTransformerClassifier
 from weighting import weighted_example_loss
 

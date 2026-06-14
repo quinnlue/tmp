@@ -1,7 +1,7 @@
 """Phase A (ViT): measure & maximize the metasmoothness of a Vision Transformer
 backbone on CIFAR-10, locally (RTX 4050) and overnight.
 
-This is the transformer analogue of `_run_metasmooth_vm.py` (which did the same
+This is the transformer analogue of `experiments.cifar10.metasmooth_vm` (which did the same
 for ResNet-9).  We reuse the paper's two finite-difference diagnostics
 (arXiv:2503.13751, Defs 1 & 2) straight out of `metasmooth.py` -- they are
 model-agnostic -- and only swap in a ViT learning algorithm `A(z)`:
@@ -45,7 +45,7 @@ from torch import Tensor
 from torch.func import functional_call
 
 import metasmooth as ms
-from _vit_menu import (
+from experiments.cifar10.vit_menu import (
     BASELINE_VIT,
     SMOOTH_VIT,
     SMOOTH_WIDE_VIT,
@@ -190,7 +190,7 @@ def make_run_fn(routine: ViTRoutine, subset: ms.CifarSubset, kind: str):
 
 
 # --------------------------------------------------------------------------- #
-# Benchmark driver (mirrors _run_metasmooth_vm.py's record()/bench())
+# Benchmark driver (mirrors metasmooth_vm.py's record()/bench())
 # --------------------------------------------------------------------------- #
 subset = ms.load_cifar_subset(DATA_DIR, n_train=N_TRAIN, n_val=N_VAL, seed=0, device=device)
 

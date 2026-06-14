@@ -132,7 +132,7 @@ The class basis is too restrictive for this supervised CIFAR-10 setting: example
 Primary paired comparison (Q1), run from `/workspace/autoresearch-mgd` on the VM:
 
 ```bash
-/venv/main/bin/python -m experiments.compare_mgd_granularity \
+/venv/main/bin/python -m experiments.cifar10.compare_mgd_granularity \
   --data-dir /workspace/tmp/data \
   --output artifacts/q1_primary.json \
   --pool-per-class 400 \
@@ -162,7 +162,7 @@ VM:    79 passed in 397.26s
 ```powershell
 # Local isolated worktree
 C:\Users\luequ\micromamba\envs\torch311\python.exe -m pytest -m "not gpu" -q
-C:\Users\luequ\micromamba\envs\torch311\python.exe -m experiments.summarize_mgd_granularity --artifacts-dir artifacts
+C:\Users\luequ\micromamba\envs\torch311\python.exe -m experiments.cifar10.summarize_mgd_granularity --artifacts-dir artifacts
 ```
 
 ## Gotchas

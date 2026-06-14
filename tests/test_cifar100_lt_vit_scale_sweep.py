@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 import torch
 
-from _cifar100_lt import balanced_eval_split
-from _run_cifar100_lt_vit_scale_sweep import (
+from experiments.cifar100_lt.data import balanced_eval_split
+from experiments.cifar100_lt.vit_scale_sweep import (
     PROFILES,
     build_model,
     frequency_tiers,

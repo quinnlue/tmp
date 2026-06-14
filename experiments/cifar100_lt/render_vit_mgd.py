@@ -1,10 +1,10 @@
 """Render the CIFAR100-LT / ViT-Tiny MGD granularity comparison as markdown.
 
-Reads the artifacts produced by `_run_cifar100_lt_vit_mgd.py`:
+Reads the artifacts produced by `experiments.cifar100_lt.vit_mgd`:
   baseline.json (uniform), reeval_<granularity>.json (full-recipe re-eval under
   learned weights), and search_<granularity>.json (the MGD search trajectory).
 
-Usage: python _render_cifar100_lt_vit_mgd.py [--artifact-dir DIR]
+Usage: python -m experiments.cifar100_lt.render_vit_mgd [--artifact-dir DIR]
 """
 from __future__ import annotations
 

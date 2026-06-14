@@ -9,7 +9,7 @@ image), so this script looks at it more carefully:
     size, as it did for ResNet-9).
 
 It is deliberately standalone -- it carries its own small training core so it
-can't disturb the verified `_run_vit_metasmooth_local.py`.  fp32 throughout.
+can't disturb the verified `experiments.cifar10.vit_metasmooth`. fp32 throughout.
 
 Config via env: N_TRAIN N_VAL EPOCHS BATCH LR EPS DIM DEPTH HEADS PATCH
                 DIRS H_SWEEP MAX_MINUTES CIFAR_DIR OUT
@@ -28,7 +28,7 @@ from torch import Tensor
 from torch.func import functional_call
 
 import metasmooth as ms
-from _vit_menu import ViTGeometry, ViTRoutine
+from experiments.cifar10.vit_menu import ViTGeometry, ViTRoutine
 from functional_train import (
     SmoothAdamWConfig,
     initialize_train_state,

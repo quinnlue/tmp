@@ -9,6 +9,28 @@
 
 ---
 
+## Repository Layout
+
+- Root-level Python modules are the reusable metagradient, replay, model, data-loading, and
+  weighting library.
+- `experiments/cifar10/` contains CIFAR-10 metasmoothness and MGD studies.
+- `experiments/cifar100_lt/` contains CIFAR-100-LT data helpers, sweeps, MGD studies, and renderers.
+- `experiments/imagenet_lt/` contains ImageNet-LT preparation, training, comparison, and summaries.
+- `experiments/vit/` contains dataset-independent ViT probes and benchmarks.
+- `tools/` contains repository maintenance utilities; notebook migration helpers live under
+  `tools/notebooks/`.
+- `artifacts/` contains checked-in research results. Generated logs belong under `logs/`.
+
+Run experiment and tool entry points from the repository root with module syntax, for example:
+
+```bash
+python -m experiments.cifar100_lt.vit_mgd --help
+python -m experiments.imagenet_lt.compare_mgd --help
+python -m tools.build_cifar_cache ./data
+```
+
+---
+
 ## 1. Context & Motivation
 
 The paper **"Optimizing ML Training with Metagradient Descent"** (Engstrom, Ilyas, Chen, Feldmann,

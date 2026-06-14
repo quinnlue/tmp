@@ -16,7 +16,7 @@ from clustering import (
     hierarchical_kmeans_cluster_basis,
     save_cluster_basis_artifacts,
 )
-from experiments.compare_imagenet_lt_mgd import (
+from experiments.imagenet_lt.compare_mgd import (
     ClusterAlignment,
     Config,
     FeatureArtifact,

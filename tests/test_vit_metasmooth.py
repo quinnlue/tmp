@@ -15,7 +15,7 @@ import torch
 from torch.func import functional_call
 
 import metasmooth as ms
-from _vit_menu import (
+from experiments.cifar10.vit_menu import (
     BASELINE_VIT,
     SMOOTH_VIT,
     SMOOTH_WIDE_VIT,
