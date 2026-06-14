@@ -104,7 +104,7 @@ are present.
 
 ## Source documents
 
-- `HANDOFF_metasmoothness.md`, `HANDOFF_vm_phaseABC.md`, `HANDOFF_vit_metasmoothness.md`
+- `HANDOFF_metasmoothness.md`, `HANDOFF_vm_phaseABC.md`, `HANDOFF_vit_metasmoothness.md` (all verbatim in [archive/original-handoffs.md](archive/original-handoffs.md))
 - `.worktrees/autoresearch-mgd/artifacts/AUTORESEARCH_REPORT.md`
 - `.worktrees/imagenet-lt-autoresearch/artifacts/imagenet_lt/IMAGENET_LT_MGD_RESULTS.md`
 - the runner scripts named above

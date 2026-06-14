@@ -110,4 +110,4 @@ This plan was executed in
 
 ## Source documents
 
-- `CIFAR100_LT_VIT_SCALE_STUDY.md`
+- `CIFAR100_LT_VIT_SCALE_STUDY.md` (verbatim in [archive/original-handoffs.md](archive/original-handoffs.md))

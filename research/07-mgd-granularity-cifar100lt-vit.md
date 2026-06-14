@@ -152,5 +152,5 @@ Artifacts: `artifacts/cifar100_lt_vit_mgd/{baseline,search_<g>,reeval_<g>}.json`
 ## Source documents
 
 - `artifacts/cifar100_lt_vit_mgd/baseline.json`, `reeval_{per_class,per_cluster,per_example}.json`, `search_{per_class,per_cluster,per_example}.json`
-- `CIFAR100_LT_VIT_SCALE_STUDY.md` (backbone/recipe selection)
+- `CIFAR100_LT_VIT_SCALE_STUDY.md` (backbone/recipe selection; verbatim in [archive/original-handoffs.md](archive/original-handoffs.md))
 - `_run_cifar100_lt_vit_mgd.py`, `_cluster_basis.py`, `_render_cifar100_lt_vit_mgd.py`

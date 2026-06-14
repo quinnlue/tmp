@@ -87,3 +87,10 @@ result files that were scattered across four git branches/worktrees
 `codex/autoresearch-mgd`, `codex/imagenet-lt-autoresearch`). Each document's
 `## Source documents` section lists the originals it draws from. All quantitative
 results are reproduced from those sources; nothing here is re-measured.
+
+The original root-level handoff and study documents
+(`HANDOFF_metasmoothness.md`, `HANDOFF_vm_phaseABC.md`,
+`HANDOFF_vit_metasmoothness.md`, `CIFAR100_LT_VIT_SCALE_STUDY.md`) are preserved
+verbatim in [`archive/original-handoffs.md`](archive/original-handoffs.md). The
+remaining source files (the `AUTORESEARCH_*` / `imagenet_lt/*` result files and
+the code referenced above) live on their original branches and worktrees.

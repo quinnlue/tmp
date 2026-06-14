@@ -126,7 +126,7 @@ Run the CPU oracle suite (`pytest`, `@pytest.mark.cpu`) on every merge; run the 
 
 - `README.md`
 - `VERIFICATION.md`
-- `HANDOFF_metasmoothness.md`
+- `HANDOFF_metasmoothness.md` (verbatim in [archive/original-handoffs.md](archive/original-handoffs.md))
 - `functional_train.py`
 - `weighting.py`
 - `recursive_replay.py`

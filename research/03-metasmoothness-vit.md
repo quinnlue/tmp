@@ -258,6 +258,6 @@ Smoke test (~10 s, proves the pipeline + ordering):
 
 ## Source documents
 
-- `HANDOFF_vit_metasmoothness.md`
+- `HANDOFF_vit_metasmoothness.md` (verbatim in [archive/original-handoffs.md](archive/original-handoffs.md))
 - `_vit_menu.py`
 - `model.py`

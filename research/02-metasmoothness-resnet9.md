@@ -158,5 +158,5 @@ Artifacts on the laptop (repo root): `metasmooth_vm_results.json`, `metasmooth_v
 
 ## Source documents
 
-- `HANDOFF_metasmoothness.md`
-- `HANDOFF_vm_phaseABC.md`
+- `HANDOFF_metasmoothness.md` (verbatim in [archive/original-handoffs.md](archive/original-handoffs.md))
+- `HANDOFF_vm_phaseABC.md` (verbatim in [archive/original-handoffs.md](archive/original-handoffs.md))
